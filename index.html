@@ -82,9 +82,9 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <a href="http://localhost:8088" target="_blank" class="px-3 py-1 bg-white text-amber-900 hover:bg-amber-50 font-bold rounded-lg shadow-sm transition flex items-center gap-1">
+        <button onclick="checkAndOpenLocalhost()" id="btnOpenLocalhost" class="px-3 py-1 bg-white text-amber-900 hover:bg-amber-50 font-bold rounded-lg shadow-sm transition flex items-center gap-1 cursor-pointer">
           💻 เปิดในเครื่อง (Localhost:8088)
-        </a>
+        </button>
         <a href="https://codespaces.new/piromc-rgb/Production-Prepare-Document" target="_blank" class="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg shadow-sm transition flex items-center gap-1">
           ☁️ เปิดบน GitHub Codespaces (Cloud ฟรี)
         </a>
@@ -501,7 +501,7 @@
         </p>
 
         <div class="space-y-2.5">
-          <a href="http://localhost:8088" target="_blank" class="block p-3 rounded-xl border border-indigo-200 bg-indigo-50/60 hover:bg-indigo-100/60 transition group">
+          <button onclick="closeCloudModal(); checkAndOpenLocalhost();" class="w-full text-left p-3 rounded-xl border border-indigo-200 bg-indigo-50/60 hover:bg-indigo-100/60 transition group cursor-pointer">
             <div class="flex items-center justify-between">
               <span class="text-xs font-bold text-indigo-900 flex items-center gap-2">
                 💻 รันบนเครื่องคอมพิวเตอร์ของคุณ (แนะนำ)
@@ -509,7 +509,7 @@
               <span class="text-[11px] text-indigo-600 font-semibold group-hover:underline">เปิด localhost:8088 ➔</span>
             </div>
             <p class="text-[11px] text-indigo-700/80 mt-1">ดับเบิลคลิกไฟล์ <code>run_app.bat</code> ในเครื่อง แล้วเปิดใช้งานได้ทันที</p>
-          </a>
+          </button>
 
           <a href="https://codespaces.new/piromc-rgb/Production-Prepare-Document" target="_blank" class="block p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition group">
             <div class="flex items-center justify-between">
@@ -531,6 +531,94 @@
     </div>
   </div>
 
+  <!-- Localhost Setup Modal (เมื่อยังไม่ได้เปิด run_app.bat ในเครื่อง) -->
+  <div id="localhostSetupModal" class="hidden fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeLocalhostSetupModal()"></div>
+    <div class="flex min-h-screen items-center justify-center p-4 text-center">
+      <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-xl border border-slate-200 p-6 space-y-4">
+        <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
+          <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-2xl shrink-0">
+            ⚠️
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">ยังไม่ได้เปิด Server บนเครื่องของคุณ (Localhost:8088)</h3>
+            <p class="text-xs text-slate-500">สำหรับเครื่องที่ยังไม่เคยรันโปรแกรม หรือยังไม่ได้เปิด <code>run_app.bat</code></p>
+          </div>
+        </div>
+
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 space-y-1">
+          <p class="font-bold flex items-center gap-1.5">
+            💡 ทำไมถึงยังเปิดไม่ได้?
+          </p>
+          <p class="text-[11px] text-amber-800 leading-relaxed">
+            หน้าเว็บเบราว์เซอร์ไม่สามารถสั่งเปิดโปรแกรมในเครื่องของคุณเองได้ คุณจำเป็นต้องสั่งเปิดเซิร์ฟเวอร์บนเครื่องก่อน 1 ครั้ง
+          </p>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <h4 class="font-bold text-slate-800 text-xs">วิธีเปิดใช้งาน (เลือกตามสถานะเครื่องของคุณ):</h4>
+
+          <!-- Option 1: มีโฟลเดอร์อยู่แล้ว -->
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-slate-900 flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px]">1</span>
+                กรณีมีโฟลเดอร์โปรแกรมในเครื่องนี้แล้ว:
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-600 pl-6.5">
+              เข้าไปที่โฟลเดอร์โปรแกรม แล้วดับเบิลคลิกไฟล์ <b><code class="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-200">run_app.bat</code></b><br>
+              <span class="text-slate-400">*(ระบบจะตรวจสอบ Python ติดตั้งสิ่งที่ต้องใช้ให้อัตโนมัติ และเปิดหน้าเว็บให้ทันที)*</span>
+            </p>
+          </div>
+
+          <!-- Option 2: เครื่องใหม่ ยังไม่มีไฟล์ -->
+          <div class="p-3.5 rounded-xl border border-indigo-200 bg-indigo-50/40 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-indigo-900 flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">2</span>
+                กรณีเป็นเครื่องใหม่ ที่ยังไม่มีโปรแกรมในเครื่องนี้:
+              </span>
+            </div>
+            <p class="text-[11px] text-indigo-950 pl-6.5 mb-2">
+              ดาวน์โหลดไฟล์โปรแกรมทั้งหมดไปไว้ในเครื่อง จากนั้นแตกไฟล์ ZIP แล้วดับเบิลคลิก <b><code>run_app.bat</code></b>:
+            </p>
+            <div class="pl-6.5">
+              <a href="https://github.com/piromc-rgb/Production-Prepare-Document/archive/refs/heads/main.zip" target="_blank" class="inline-flex items-center gap-2 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs shadow transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                📥 ดาวน์โหลดโปรแกรม (ZIP จาก GitHub)
+              </a>
+            </div>
+          </div>
+
+          <!-- Option 3: ใช้งานบน Cloud ไม่ต้องติดตั้งอะไรเลย -->
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-slate-800 flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[10px]">3</span>
+                หรือใช้งานทันทีผ่าน Cloud (ไม่ต้องติดตั้งโปรแกรม):
+              </span>
+            </div>
+            <div class="pl-6.5">
+              <a href="https://codespaces.new/piromc-rgb/Production-Prepare-Document" target="_blank" class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg text-xs transition">
+                ☁️ เปิดใช้งานบน GitHub Codespaces (ฟรี)
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 flex items-center justify-between border-t border-slate-100">
+          <button onclick="checkAndOpenLocalhost()" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold flex items-center gap-1">
+            🔄 ลองเชื่อมต่อใหม่อีกครั้ง
+          </button>
+          <button onclick="closeLocalhostSetupModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-medium transition">
+            ปิดหน้าต่าง
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const isCloud = window.location.hostname.includes('github.io') || window.location.protocol === 'file:';
 
@@ -540,6 +628,61 @@
 
     function closeCloudModal() {
       document.getElementById('cloudModal').classList.add('hidden');
+    }
+
+    function openLocalhostSetupModal() {
+      document.getElementById('localhostSetupModal').classList.remove('hidden');
+    }
+
+    function closeLocalhostSetupModal() {
+      document.getElementById('localhostSetupModal').classList.add('hidden');
+    }
+
+    async function checkAndOpenLocalhost() {
+      const btn = document.getElementById('btnOpenLocalhost');
+      const originalText = btn ? btn.innerHTML : '';
+      if (btn) btn.innerHTML = '⏳ กำลังตรวจสอบ...';
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 1800);
+
+      try {
+        const res = await fetch('http://localhost:8088/api/settings', {
+          signal: controller.signal,
+          headers: { 'Accept': 'application/json' }
+        });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          if (btn) btn.innerHTML = originalText;
+          window.open('http://localhost:8088', '_blank');
+          return;
+        }
+      } catch (err) {
+        clearTimeout(timeoutId);
+      }
+
+      if (btn) btn.innerHTML = originalText;
+      openLocalhostSetupModal();
+    }
+
+    async function checkLocalhostBackground() {
+      if (!isCloud) return;
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1500);
+        const res = await fetch('http://localhost:8088/api/settings', {
+          signal: controller.signal,
+          headers: { 'Accept': 'application/json' }
+        });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const btn = document.getElementById('btnOpenLocalhost');
+          if (btn) {
+            btn.innerHTML = '🟢 เปิดในเครื่อง (Localhost พร้อมใช้งาน)';
+            btn.className = 'px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow-sm transition flex items-center gap-1 cursor-pointer';
+          }
+        }
+      } catch (e) {}
     }
 
     let currentOrder = ['pd', 'dwg', 'qc'];
@@ -951,6 +1094,7 @@
       if (e.key === 'Escape') {
         closeSettingsModal();
         closeCloudModal();
+        closeLocalhostSetupModal();
       }
     });
 
@@ -1028,6 +1172,7 @@
       if (isCloud) {
         const cb = document.getElementById('cloudBanner');
         if (cb) cb.classList.remove('hidden');
+        checkLocalhostBackground();
       }
       renderSourceCards();
       refreshStatus();

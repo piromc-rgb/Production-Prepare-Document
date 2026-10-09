@@ -233,10 +233,20 @@ class AppHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
 
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Accept')
+        self.end_headers()
+
     def send_json(self, data, status=200):
         body = json.dumps(data, ensure_ascii=False).encode('utf-8')
         self.send_response(status)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Accept')
         self.send_header('Content-Length', str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -676,11 +686,24 @@ class AppHandler(BaseHTTPRequestHandler):
         self.send_error(404, "Not Found")
 
 def run(port=8088):
+    import threading
+    import time
+    import webbrowser
+
     server = ThreadingHTTPServer(('0.0.0.0', port), AppHandler)
     print(f"==================================================")
-    print(f" Web App started successfully on port {port}!")
-    print(f" URL: http://localhost:{port}")
+    print(f" [OK] Web App started successfully on port {port}!")
+    print(f" [->] URL: http://localhost:{port}")
     print(f"==================================================")
+
+    def _open_browser():
+        time.sleep(1.2)
+        try:
+            webbrowser.open(f"http://localhost:{port}")
+        except Exception:
+            pass
+
+    threading.Thread(target=_open_browser, daemon=True).start()
     server.serve_forever()
 
 if __name__ == '__main__':
