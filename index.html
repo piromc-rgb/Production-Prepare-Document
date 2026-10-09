@@ -33,13 +33,22 @@
 
       <!-- Action Buttons in Navbar -->
       <div class="flex flex-wrap items-center gap-2 text-xs">
+        <!-- Settings Button -->
+        <button onclick="openSettingsModal()" class="px-3 py-1.5 bg-indigo-700 hover:bg-indigo-600 text-white border border-indigo-500/50 rounded-lg transition font-medium flex items-center gap-1.5 shadow-sm" title="ตั้งค่าที่อยู่โฟลเดอร์ต่างๆ (Locations)">
+          <svg class="w-3.5 h-3.5 text-indigo-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          <span>ตั้งค่า (Settings)</span>
+        </button>
+
         <!-- Clear Buttons -->
-        <button onclick="clearData('input')" class="px-2.5 py-1.5 bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 rounded-lg transition font-medium flex items-center gap-1" title="ล้างไฟล์ใบสั่งผลิตใน pdf_list">
+        <button onclick="clearData('input')" class="px-2.5 py-1.5 bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 rounded-lg transition font-medium flex items-center gap-1" title="ล้างไฟล์ใบสั่งผลิตในโฟลเดอร์ Input">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
           ล้าง Input
         </button>
 
-        <button onclick="clearData('output')" class="px-2.5 py-1.5 bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 rounded-lg transition font-medium flex items-center gap-1" title="ล้างไฟล์ผลลัพธ์ใน output">
+        <button onclick="clearData('output')" class="px-2.5 py-1.5 bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 rounded-lg transition font-medium flex items-center gap-1" title="ล้างไฟล์ผลลัพธ์ในโฟลเดอร์ Output">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
           ล้าง Output
         </button>
@@ -64,22 +73,28 @@
 
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
-    <!-- DWG Folder Configuration Bar -->
+    <!-- Location Configuration & Status Bar -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
       <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
           </div>
           <div>
-            <h2 class="text-xs font-bold text-slate-800">แหล่งเก็บไฟล์ Drawing (DWG Folder / Link Google Drive)</h2>
-            <p id="resolvedDwgPathText" class="text-[11px] text-slate-500 truncate max-w-xl">กำลังตรวจสอบ...</p>
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-xs font-bold text-slate-800">แหล่งเก็บไฟล์และโฟลเดอร์ระบบ (System Locations)</h2>
+              <span id="quickDwgBadge" class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-medium">DWG พร้อม</span>
+            </div>
+            <p id="resolvedDwgPathText" class="text-[11px] text-slate-500 truncate max-w-2xl mt-0.5">กำลังตรวจสอบ...</p>
           </div>
         </div>
         <div class="flex items-center gap-2 w-full md:w-auto">
-          <input type="text" id="dwgInput" class="text-xs px-3 py-1.5 border border-slate-300 rounded-lg w-full md:w-96 focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="ลิงก์ Google Drive หรือพาธในเครื่อง">
-          <button onclick="updateDwgSource()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold whitespace-nowrap transition">
-            บันทึกที่อยู่
+          <button onclick="openSettingsModal()" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 shadow-sm">
+            <svg class="w-3.5 h-3.5 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            ⚙️ ตั้งค่า Location ต่างๆ
           </button>
         </div>
       </div>
@@ -97,7 +112,7 @@
               อัปโหลดไฟล์ Production Order
             </h2>
             <div class="flex items-center gap-1.5">
-              <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">pdf_list</span>
+              <span id="cardPdFolderBadge" class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">pdf_list</span>
               <button onclick="clearData('input')" class="text-[11px] text-rose-600 hover:text-rose-800 hover:underline flex items-center gap-0.5" title="ล้างไฟล์ Input">
                 🗑️ ล้างไฟล์
               </button>
@@ -315,6 +330,135 @@
 
   </main>
 
+  <!-- Settings Modal (Location Settings) -->
+  <div id="settingsModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeSettingsModal()"></div>
+
+    <div class="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
+      <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-slate-200">
+        
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 px-6 py-4 text-white flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-white">⚙️ ตั้งค่าตำแหน่งโฟลเดอร์และที่เก็บไฟล์ (Location Settings)</h3>
+              <p class="text-[11px] text-slate-300">กำหนดพาธโฟลเดอร์สำหรับเอกสารแต่ละส่วนในระบบ</p>
+            </div>
+          </div>
+          <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white transition p-1 rounded-lg hover:bg-white/10" title="ปิดหน้าต่าง">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+
+        <!-- Modal Body: Form Inputs -->
+        <div class="p-6 space-y-4 text-xs max-h-[75vh] overflow-y-auto">
+          
+          <!-- 1. DWG Source -->
+          <div class="bg-slate-50/70 rounded-xl p-4 border border-slate-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="font-bold text-slate-800 flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px]">1</span>
+                📐 แหล่งเก็บไฟล์แบบ Drawing (CAD / PDF Drawing)
+              </label>
+              <button onclick="openFolderTarget('dwg')" class="text-[11px] text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1 font-medium">
+                📂 เปิดโฟลเดอร์
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-500">รองรับทั้งลิงก์ Google Drive Folder (แปลง shortcut ให้อัตโนมัติ) หรือพาธโฟลเดอร์ในเครื่อง (เช่น <code class="bg-slate-200/60 px-1 py-0.5 rounded">G:\My Drive\staus overview\dwg</code>)</p>
+            <input type="text" id="settingDwgSource" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="ลิงก์ Google Drive หรือพาธ เช่น G:\My Drive\staus overview\dwg">
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-[11px] text-slate-400">โฟลเดอร์ที่ระบบตรวจพบ:</span>
+              <span id="settingDwgResolved" class="text-[11px] font-mono text-slate-600 truncate max-w-sm">-</span>
+            </div>
+          </div>
+
+          <!-- 2. Production Order Folder -->
+          <div class="bg-slate-50/70 rounded-xl p-4 border border-slate-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="font-bold text-slate-800 flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px]">2</span>
+                📄 โฟลเดอร์ใบสั่งผลิตต้นทาง (Production Order / PD Input)
+              </label>
+              <button onclick="openFolderTarget('pd')" class="text-[11px] text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1 font-medium">
+                📂 เปิดโฟลเดอร์
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-500">โฟลเดอร์สำหรับรับไฟล์ใบสั่งผลิตจากการอัปโหลด หรือโฟลเดอร์ที่เก็บไฟล์ PDF รวม (ค่าเริ่มต้น: <code class="bg-slate-200/60 px-1 py-0.5 rounded">pdf_list</code>)</p>
+            <input type="text" id="settingPdDir" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="เช่น pdf_list หรือระบุพาธเต็ม D:\PD_Orders">
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-[11px] text-slate-400">โฟลเดอร์เต็มในเครื่อง:</span>
+              <span id="settingPdResolved" class="text-[11px] font-mono text-slate-600 truncate max-w-sm">-</span>
+            </div>
+          </div>
+
+          <!-- 3. Attachment Form Folder -->
+          <div class="bg-slate-50/70 rounded-xl p-4 border border-slate-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="font-bold text-slate-800 flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px]">3</span>
+                📋 โฟลเดอร์แบบฟอร์มแนบ (Attachment / QC Check Sheet)
+              </label>
+              <button onclick="openFolderTarget('att')" class="text-[11px] text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1 font-medium">
+                📂 เปิดโฟลเดอร์
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-500">โฟลเดอร์เก็บไฟล์แบบฟอร์มตรวจสอบคุณภาพ <code class="bg-slate-200/60 px-1 py-0.5 rounded">QC_check_sheet.pdf</code> (ค่าเริ่มต้น: <code class="bg-slate-200/60 px-1 py-0.5 rounded">att_form</code>)</p>
+            <input type="text" id="settingAttDir" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="เช่น att_form หรือพาธเต็ม">
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-[11px] text-slate-400">โฟลเดอร์เต็มในเครื่อง:</span>
+              <span id="settingAttResolved" class="text-[11px] font-mono text-slate-600 truncate max-w-sm">-</span>
+            </div>
+          </div>
+
+          <!-- 4. Output Folder -->
+          <div class="bg-slate-50/70 rounded-xl p-4 border border-slate-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="font-bold text-slate-800 flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px]">4</span>
+                📦 โฟลเดอร์บันทึกผลลัพธ์ (Output Destination)
+              </label>
+              <button onclick="openFolderTarget('output')" class="text-[11px] text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1 font-medium">
+                📂 เปิดโฟลเดอร์
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-500">โฟลเดอร์ปลายทางสำหรับบันทึกไฟล์ PDF ที่จัดชุดเสร็จแล้ว (ค่าเริ่มต้น: <code class="bg-slate-200/60 px-1 py-0.5 rounded">output</code>)</p>
+            <input type="text" id="settingOutputDir" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="เช่น output หรือพาธเต็ม เช่น G:\My Drive\PrintReady">
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-[11px] text-slate-400">โฟลเดอร์เต็มในเครื่อง:</span>
+              <span id="settingOutputResolved" class="text-[11px] font-mono text-slate-600 truncate max-w-sm">-</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="bg-slate-100 px-6 py-3.5 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+          <button onclick="resetSettingsDefault()" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-medium transition flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            คืนค่าเริ่มต้น
+          </button>
+          <div class="flex items-center gap-2">
+            <button onclick="closeSettingsModal()" class="px-4 py-1.5 bg-white hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-lg text-xs font-medium transition">
+              ยกเลิก
+            </button>
+            <button onclick="saveSettings()" id="btnSaveSettings" class="px-5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              บันทึกการตั้งค่า
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <script>
     let currentOrder = ['pd', 'dwg', 'qc'];
     const sourceNames = {
@@ -433,8 +577,20 @@
         const res = await fetch('/api/preview');
         const data = await res.json();
         
-        document.getElementById('dwgInput').value = data.dwg_source || '';
-        document.getElementById('resolvedDwgPathText').innerText = `โฟลเดอร์ในเครื่อง: ${data.resolved_dwg_path} (${data.dwg_files_count || 0} ไฟล์แบบ PDF)`;
+        if (data.locations) {
+          document.getElementById('resolvedDwgPathText').innerText = `Drawing: ${data.locations.resolved_dwg || data.resolved_dwg_path} (${data.dwg_files_count || 0} ไฟล์) | Input: ${data.locations.pd_dir} | Output: ${data.locations.output_dir}`;
+          const badge = document.getElementById('cardPdFolderBadge');
+          if (badge) badge.innerText = data.locations.pd_dir;
+          const quickBadge = document.getElementById('quickDwgBadge');
+          if (quickBadge) {
+            quickBadge.innerText = (data.dwg_files_count > 0) ? `DWG: ${data.dwg_files_count} แบบ` : `ไม่พบ DWG`;
+            quickBadge.className = (data.dwg_files_count > 0) 
+              ? "text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-medium"
+              : "text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-medium";
+          }
+        } else {
+          document.getElementById('resolvedDwgPathText').innerText = `โฟลเดอร์ในเครื่อง: ${data.resolved_dwg_path} (${data.dwg_files_count || 0} ไฟล์แบบ PDF)`;
+        }
 
         document.getElementById('activeFileName').innerText = data.active_file || 'ไม่มีไฟล์ (กรุณาอัปโหลด)';
         document.getElementById('activeFileCount').innerText = `${data.total_pds || 0} ใบ`;
@@ -564,7 +720,100 @@
     }
 
     async function openOutputFolder() {
-      await fetch('/api/open-folder', { method: 'POST' });
+      await openFolderTarget('output');
+    }
+
+    // Settings Modal Functions
+    const DEFAULT_DWG_INPUT = "https://drive.google.com/drive/folders/1M-QDPilC7Nn-YW_5YxLQITUS6ZOYEyFm?usp=drive_link";
+
+    async function openSettingsModal() {
+      try {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        if (data.success) {
+          const cfg = data.config || {};
+          const resvd = data.resolved || {};
+          
+          document.getElementById('settingDwgSource').value = cfg.dwg_source || '';
+          document.getElementById('settingPdDir').value = cfg.pd_dir || 'pdf_list';
+          document.getElementById('settingAttDir').value = cfg.att_dir || 'att_form';
+          document.getElementById('settingOutputDir').value = cfg.output_dir || 'output';
+
+          document.getElementById('settingDwgResolved').innerText = `${resvd.dwg || '-'} (${resvd.dwg_count || 0} ไฟล์)`;
+          document.getElementById('settingPdResolved').innerText = `${resvd.pd || '-'} (${resvd.pd_count || 0} ไฟล์)`;
+          document.getElementById('settingAttResolved').innerText = `${resvd.att || '-'} (${resvd.att_count || 0} ไฟล์)`;
+          document.getElementById('settingOutputResolved').innerText = `${resvd.output || '-'} (${resvd.output_count || 0} ไฟล์)`;
+        }
+      } catch (e) {
+        console.error('Error fetching settings:', e);
+      }
+      document.getElementById('settingsModal').classList.remove('hidden');
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('settingsModal').classList.add('hidden');
+    }
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeSettingsModal();
+    });
+
+    function resetSettingsDefault() {
+      document.getElementById('settingDwgSource').value = DEFAULT_DWG_INPUT;
+      document.getElementById('settingPdDir').value = 'pdf_list';
+      document.getElementById('settingAttDir').value = 'att_form';
+      document.getElementById('settingOutputDir').value = 'output';
+    }
+
+    async function saveSettings() {
+      const btn = document.getElementById('btnSaveSettings');
+      btn.disabled = true;
+      btn.innerText = 'กำลังบันทึก...';
+
+      const payload = {
+        dwg_source: document.getElementById('settingDwgSource').value.trim(),
+        pd_dir: document.getElementById('settingPdDir').value.trim(),
+        att_dir: document.getElementById('settingAttDir').value.trim(),
+        output_dir: document.getElementById('settingOutputDir').value.trim(),
+      };
+
+      try {
+        const res = await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeSettingsModal();
+          await refreshStatus(true);
+          alert('บันทึกการตั้งค่าตำแหน่งโฟลเดอร์เรียบร้อยแล้ว!');
+        } else {
+          alert('เกิดข้อผิดพลาดในการบันทึก: ' + (data.error || 'Unknown error'));
+        }
+      } catch (e) {
+        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + e);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> บันทึกการตั้งค่า`;
+      }
+    }
+
+    async function openFolderTarget(target) {
+      try {
+        const res = await fetch('/api/open-folder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target: target })
+        });
+        const data = await res.json();
+        if (!data.success) {
+          alert('ไม่สามารถเปิดโฟลเดอร์ได้: ' + (data.error || ''));
+        }
+      } catch (e) {
+        alert('เกิดข้อผิดพลาด: ' + e);
+      }
     }
 
     window.onload = () => {

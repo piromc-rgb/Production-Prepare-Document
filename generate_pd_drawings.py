@@ -37,12 +37,64 @@ def format_qty(qty_str):
     except Exception:
         return str(qty_str)
 
+import json
+
+def load_config(base_dir):
+    cfg_path = os.path.join(base_dir, "config.json")
+    cfg = {
+        'dwg_source': DEFAULT_DWG_INPUT,
+        'pd_dir': 'pdf_list',
+        'att_dir': 'att_form',
+        'output_dir': 'output'
+    }
+    if os.path.exists(cfg_path):
+        try:
+            with open(cfg_path, 'r', encoding='utf-8') as f:
+                saved = json.load(f)
+                if isinstance(saved, dict):
+                    cfg.update(saved)
+        except Exception:
+            pass
+    return cfg
+
+def resolve_dir_path(base_dir, path_str, default_subfolder):
+    if not path_str or not str(path_str).strip():
+        p = os.path.join(base_dir, default_subfolder)
+    else:
+        path_str = str(path_str).strip()
+        if os.path.isabs(path_str):
+            p = path_str
+        else:
+            p = os.path.join(base_dir, path_str)
+    return os.path.normpath(p)
+
 def main():
-    base_dir = r"g:\My Drive\pdo_prepare_print"
-    pdf_source = os.path.join(base_dir, "pd_list", "PD2611023-PD26110963.pdf")
-    dwg_root = resolve_dwg_dir(DEFAULT_DWG_INPUT)
-    qc_form_path = os.path.join(base_dir, "att_form", "QC_check_sheet.pdf")
-    output_dir = os.path.join(base_dir, "output")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    cfg = load_config(base_dir)
+
+    pd_dir = resolve_dir_path(base_dir, cfg.get('pd_dir', 'pdf_list'), 'pdf_list')
+    att_dir = resolve_dir_path(base_dir, cfg.get('att_dir', 'att_form'), 'att_form')
+    output_dir = resolve_dir_path(base_dir, cfg.get('output_dir', 'output'), 'output')
+    dwg_root = resolve_dwg_dir(cfg.get('dwg_source', DEFAULT_DWG_INPUT))
+
+    # Find pd source
+    pdf_source = None
+    for d in [pd_dir, os.path.join(base_dir, "pd_list"), os.path.join(base_dir, "pdf_list")]:
+        if os.path.exists(d):
+            pdfs = [f for f in os.listdir(d) if f.lower().endswith('.pdf')]
+            if pdfs:
+                pdf_source = os.path.join(d, sorted(pdfs)[-1])
+                break
+
+    qc_form_path = os.path.join(att_dir, "QC_check_sheet.pdf")
+    if not os.path.exists(qc_form_path):
+        if os.path.exists(att_dir):
+            pdfs = [f for f in os.listdir(att_dir) if f.lower().endswith('.pdf')]
+            if pdfs:
+                qc_form_path = os.path.join(att_dir, pdfs[0])
+    if not os.path.exists(qc_form_path):
+        qc_form_path = os.path.join(base_dir, "att_form", "QC_check_sheet.pdf")
+
     os.makedirs(output_dir, exist_ok=True)
 
     print("Reading source PD PDF...")

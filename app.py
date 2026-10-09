@@ -18,19 +18,43 @@ CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
 INDEX_HTML_PATH = os.path.join(BASE_DIR, "index.html")
 
 DEFAULT_DWG_INPUT = "https://drive.google.com/drive/folders/1M-QDPilC7Nn-YW_5YxLQITUS6ZOYEyFm?usp=drive_link"
+DEFAULT_CONFIG = {
+    'dwg_source': DEFAULT_DWG_INPUT,
+    'pd_dir': 'pdf_list',
+    'att_dir': 'att_form',
+    'output_dir': 'output'
+}
 
 def load_config():
+    cfg = dict(DEFAULT_CONFIG)
     if os.path.exists(CONFIG_FILE):
         try:
             with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                saved = json.load(f)
+                if isinstance(saved, dict):
+                    cfg.update(saved)
         except Exception:
             pass
-    return {'dwg_source': DEFAULT_DWG_INPUT}
+    return cfg
 
 def save_config(cfg):
     with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
         json.dump(cfg, f, ensure_ascii=False, indent=2)
+
+def resolve_dir_path(path_str, default_subfolder):
+    if not path_str or not str(path_str).strip():
+        p = os.path.join(BASE_DIR, default_subfolder)
+    else:
+        path_str = str(path_str).strip()
+        if os.path.isabs(path_str):
+            p = path_str
+        else:
+            p = os.path.join(BASE_DIR, path_str)
+    try:
+        os.makedirs(p, exist_ok=True)
+    except Exception:
+        pass
+    return os.path.normpath(p)
 
 def resolve_dwg_dir(path_or_url):
     m = re.search(r'/folders/([a-zA-Z0-9_-]+)', path_or_url)
@@ -45,6 +69,24 @@ def resolve_dwg_dir(path_or_url):
     if os.path.exists(fallback):
         return fallback
     return path_or_url
+
+def get_current_paths():
+    cfg = load_config()
+    dwg_source = cfg.get('dwg_source', DEFAULT_DWG_INPUT)
+    pd_dir = resolve_dir_path(cfg.get('pd_dir', 'pdf_list'), 'pdf_list')
+    att_dir = resolve_dir_path(cfg.get('att_dir', 'att_form'), 'att_form')
+    output_dir = resolve_dir_path(cfg.get('output_dir', 'output'), 'output')
+    resolved_dwg = resolve_dwg_dir(dwg_source)
+    return {
+        'dwg_source': dwg_source,
+        'resolved_dwg_dir': resolved_dwg,
+        'pd_dir_raw': cfg.get('pd_dir', 'pdf_list'),
+        'pd_dir': pd_dir,
+        'att_dir_raw': cfg.get('att_dir', 'att_form'),
+        'att_dir': att_dir,
+        'output_dir_raw': cfg.get('output_dir', 'output'),
+        'output_dir': output_dir,
+    }
 
 os.makedirs(PDF_LIST_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -88,12 +130,20 @@ def get_dwg_files(resolved_dwg_path):
                     dwg_files.append((f, os.path.join(root, f)))
     return dwg_files
 
-def get_active_pd_pdf():
+def get_active_pd_pdf(custom_pd_dir=None):
+    dirs_to_check = []
+    if custom_pd_dir and os.path.exists(custom_pd_dir):
+        dirs_to_check.append(custom_pd_dir)
     for d in [PDF_LIST_DIR, PD_LIST_DIR]:
-        if os.path.exists(d):
+        if d not in dirs_to_check and os.path.exists(d):
+            dirs_to_check.append(d)
+    for d in dirs_to_check:
+        try:
             pdfs = [f for f in os.listdir(d) if f.lower().endswith('.pdf')]
             if pdfs:
                 return os.path.join(d, sorted(pdfs)[-1])
+        except Exception:
+            continue
     return None
 
 def parse_pd_pdf(pdf_path):
@@ -156,12 +206,46 @@ class AppHandler(BaseHTTPRequestHandler):
             self.wfile.write(body)
             return
 
-        if path == "/api/preview":
-            cfg = load_config()
-            dwg_source = cfg.get('dwg_source', DEFAULT_DWG_INPUT)
-            resolved_dwg_path = resolve_dwg_dir(dwg_source)
+        if path == "/api/settings":
+            paths = get_current_paths()
+            dwg_files = get_dwg_files(paths['resolved_dwg_dir'])
+            pd_files = [f for f in os.listdir(paths['pd_dir']) if f.lower().endswith('.pdf')] if os.path.exists(paths['pd_dir']) else []
+            att_files = [f for f in os.listdir(paths['att_dir']) if f.lower().endswith('.pdf')] if os.path.exists(paths['att_dir']) else []
+            output_files = [f for f in os.listdir(paths['output_dir']) if f.lower().endswith('.pdf')] if os.path.exists(paths['output_dir']) else []
 
-            active_pdf = get_active_pd_pdf()
+            self.send_json({
+                'success': True,
+                'config': {
+                    'dwg_source': paths['dwg_source'],
+                    'pd_dir': paths['pd_dir_raw'],
+                    'att_dir': paths['att_dir_raw'],
+                    'output_dir': paths['output_dir_raw']
+                },
+                'resolved': {
+                    'dwg': paths['resolved_dwg_dir'],
+                    'dwg_exists': os.path.exists(paths['resolved_dwg_dir']),
+                    'dwg_count': len(dwg_files),
+                    'pd': paths['pd_dir'],
+                    'pd_exists': os.path.exists(paths['pd_dir']),
+                    'pd_count': len(pd_files),
+                    'att': paths['att_dir'],
+                    'att_exists': os.path.exists(paths['att_dir']),
+                    'att_count': len(att_files),
+                    'output': paths['output_dir'],
+                    'output_exists': os.path.exists(paths['output_dir']),
+                    'output_count': len(output_files)
+                }
+            })
+            return
+
+        if path == "/api/preview":
+            paths = get_current_paths()
+            dwg_source = paths['dwg_source']
+            resolved_dwg_path = paths['resolved_dwg_dir']
+            pd_dir = paths['pd_dir']
+            output_dir = paths['output_dir']
+
+            active_pdf = get_active_pd_pdf(pd_dir)
             items_list = []
             matched_count = 0
             missing_count = 0
@@ -194,7 +278,7 @@ class AppHandler(BaseHTTPRequestHandler):
                         missing_count += 1
 
                     out_file = f"{pd_no}.pdf"
-                    out_exists = os.path.exists(os.path.join(OUTPUT_DIR, out_file))
+                    out_exists = os.path.exists(os.path.join(output_dir, out_file))
 
                     items_list.append({
                         'pd_no': pd_no,
@@ -208,7 +292,7 @@ class AppHandler(BaseHTTPRequestHandler):
                         'output_exists': out_exists
                     })
 
-            output_files = [f for f in os.listdir(OUTPUT_DIR) if f.lower().endswith('.pdf')] if os.path.exists(OUTPUT_DIR) else []
+            output_files = [f for f in os.listdir(output_dir) if f.lower().endswith('.pdf')] if os.path.exists(output_dir) else []
 
             self.send_json({
                 'dwg_source': dwg_source,
@@ -219,13 +303,26 @@ class AppHandler(BaseHTTPRequestHandler):
                 'matched_dwg': matched_count,
                 'missing_dwg': missing_count,
                 'items': items_list,
-                'output_files_count': len(output_files)
+                'output_files_count': len(output_files),
+                'locations': {
+                    'dwg_source': dwg_source,
+                    'resolved_dwg': resolved_dwg_path,
+                    'pd_dir': paths['pd_dir_raw'],
+                    'resolved_pd': pd_dir,
+                    'att_dir': paths['att_dir_raw'],
+                    'resolved_att': paths['att_dir'],
+                    'output_dir': paths['output_dir_raw'],
+                    'resolved_output': output_dir,
+                }
             })
             return
 
         if path.startswith("/output/"):
+            paths = get_current_paths()
             filename = urllib.parse.unquote(path[8:])
-            filepath = os.path.join(OUTPUT_DIR, filename)
+            filepath = os.path.join(paths['output_dir'], filename)
+            if not os.path.exists(filepath):
+                filepath = os.path.join(OUTPUT_DIR, filename)
             if os.path.exists(filepath) and os.path.isfile(filepath):
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/pdf')
@@ -240,11 +337,14 @@ class AppHandler(BaseHTTPRequestHandler):
                 return
 
         if path == "/api/download-zip":
+            paths = get_current_paths()
+            out_dir = paths['output_dir']
             zip_path = os.path.join(BASE_DIR, "PD_OUTPUTS_ALL.zip")
             with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                for f in os.listdir(OUTPUT_DIR):
-                    if f.lower().endswith('.pdf'):
-                        zipf.write(os.path.join(OUTPUT_DIR, f), arcname=f)
+                if os.path.exists(out_dir):
+                    for f in os.listdir(out_dir):
+                        if f.lower().endswith('.pdf'):
+                            zipf.write(os.path.join(out_dir, f), arcname=f)
             self.send_response(200)
             self.send_header('Content-Type', 'application/zip')
             self.send_header('Content-Disposition', 'attachment; filename="PD_OUTPUTS_ALL.zip"')
@@ -264,13 +364,15 @@ class AppHandler(BaseHTTPRequestHandler):
             length = int(self.headers.get('Content-Length', 0))
             payload = json.loads(self.rfile.read(length).decode('utf-8')) if length > 0 else {}
             target = payload.get('target', 'all') # 'input', 'output', 'all'
+            paths = get_current_paths()
 
             del_input = 0
             del_output = 0
 
             # 1. Clear input files
             if target in ['input', 'all']:
-                for d in [PDF_LIST_DIR, PD_LIST_DIR]:
+                input_dirs = set([paths['pd_dir'], PDF_LIST_DIR, PD_LIST_DIR])
+                for d in input_dirs:
                     if os.path.exists(d):
                         for f in os.listdir(d):
                             if f != '.gitkeep':
@@ -286,25 +388,28 @@ class AppHandler(BaseHTTPRequestHandler):
 
             # 2. Clear output files
             if target in ['output', 'all']:
-                if os.path.exists(OUTPUT_DIR):
-                    for f in os.listdir(OUTPUT_DIR):
-                        if f != '.gitkeep':
-                            p = os.path.join(OUTPUT_DIR, f)
-                            try:
-                                if os.path.isfile(p):
-                                    os.remove(p)
-                                    del_output += 1
-                                elif os.path.isdir(p):
-                                    shutil.rmtree(p)
-                            except Exception as e:
-                                print(f"Error removing {p}: {e}")
+                output_dirs = set([paths['output_dir'], OUTPUT_DIR])
+                for d in output_dirs:
+                    if os.path.exists(d):
+                        for f in os.listdir(d):
+                            if f != '.gitkeep':
+                                p = os.path.join(d, f)
+                                try:
+                                    if os.path.isfile(p):
+                                        os.remove(p)
+                                        del_output += 1
+                                    elif os.path.isdir(p):
+                                        shutil.rmtree(p)
+                                except Exception as e:
+                                    print(f"Error removing {p}: {e}")
+
                 # Also delete zip archive if present
-                zip_path = os.path.join(BASE_DIR, "PD_OUTPUTS_ALL.zip")
-                if os.path.exists(zip_path):
-                    try:
-                        os.remove(zip_path)
-                    except Exception:
-                        pass
+                for zp in [os.path.join(BASE_DIR, "PD_OUTPUTS_ALL.zip"), os.path.join(paths['output_dir'], "PD_OUTPUTS_ALL.zip")]:
+                    if os.path.exists(zp):
+                        try:
+                            os.remove(zp)
+                        except Exception:
+                            pass
 
             self.send_json({
                 'success': True,
@@ -316,19 +421,50 @@ class AppHandler(BaseHTTPRequestHandler):
 
         if path == "/api/settings":
             length = int(self.headers.get('Content-Length', 0))
-            payload = json.loads(self.rfile.read(length).decode('utf-8'))
+            payload = json.loads(self.rfile.read(length).decode('utf-8')) if length > 0 else {}
             cfg = load_config()
-            if 'dwg_source' in payload:
-                cfg['dwg_source'] = payload['dwg_source'].strip()
-                save_config(cfg)
-            self.send_json({'success': True, 'config': cfg})
+            for key in ['dwg_source', 'pd_dir', 'att_dir', 'output_dir']:
+                if key in payload and payload[key] is not None:
+                    cfg[key] = str(payload[key]).strip()
+            save_config(cfg)
+            paths = get_current_paths()
+            self.send_json({
+                'success': True,
+                'config': cfg,
+                'resolved': {
+                    'dwg': paths['resolved_dwg_dir'],
+                    'pd': paths['pd_dir'],
+                    'att': paths['att_dir'],
+                    'output': paths['output_dir']
+                }
+            })
             return
 
         if path == "/api/open-folder":
             try:
-                if sys.platform == 'win32':
-                    os.startfile(OUTPUT_DIR)
-                self.send_json({'success': True})
+                length = int(self.headers.get('Content-Length', 0))
+                payload = json.loads(self.rfile.read(length).decode('utf-8')) if length > 0 else {}
+                target = payload.get('target', 'output')
+                paths = get_current_paths()
+
+                target_dir = paths.get('output_dir')
+                if target in ['pd', 'input']:
+                    target_dir = paths.get('pd_dir')
+                elif target == 'att':
+                    target_dir = paths.get('att_dir')
+                elif target == 'dwg':
+                    target_dir = paths.get('resolved_dwg_dir')
+                elif target == 'output':
+                    target_dir = paths.get('output_dir')
+                elif os.path.exists(target):
+                    target_dir = target
+
+                if target_dir and os.path.exists(target_dir):
+                    if sys.platform == 'win32':
+                        os.startfile(target_dir)
+                    self.send_json({'success': True, 'path': target_dir})
+                else:
+                    self.send_json({'success': False, 'error': f'โฟลเดอร์ {target_dir} ไม่พบในระบบ'}, status=400)
             except Exception as e:
                 self.send_json({'success': False, 'error': str(e)})
             return
@@ -346,6 +482,10 @@ class AppHandler(BaseHTTPRequestHandler):
             boundary_bytes = boundary.encode('latin1')
             parts = post_data.split(b'--' + boundary_bytes)
 
+            paths = get_current_paths()
+            upload_target_dir = paths['pd_dir']
+            os.makedirs(upload_target_dir, exist_ok=True)
+
             saved_filename = None
             for p in parts:
                 if b'filename="' in p:
@@ -356,10 +496,18 @@ class AppHandler(BaseHTTPRequestHandler):
                         orig_fname = fname_m.group(1).decode('utf-8', errors='ignore')
                         clean_fname = os.path.basename(orig_fname)
                         if clean_fname.lower().endswith('.pdf'):
-                            target_path = os.path.join(PDF_LIST_DIR, clean_fname)
+                            target_path = os.path.join(upload_target_dir, clean_fname)
                             with open(target_path, 'wb') as f_out:
                                 f_out.write(body)
-                            shutil.copy2(target_path, os.path.join(PD_LIST_DIR, clean_fname))
+                            if os.path.normpath(upload_target_dir) != os.path.normpath(PDF_LIST_DIR):
+                                try:
+                                    shutil.copy2(target_path, os.path.join(PDF_LIST_DIR, clean_fname))
+                                except Exception:
+                                    pass
+                            try:
+                                shutil.copy2(target_path, os.path.join(PD_LIST_DIR, clean_fname))
+                            except Exception:
+                                pass
                             saved_filename = clean_fname
 
             if saved_filename:
@@ -374,19 +522,32 @@ class AppHandler(BaseHTTPRequestHandler):
             order = payload.get('order', ['pd', 'dwg', 'qc'])
             mode = payload.get('mode', 'split')
 
-            cfg = load_config()
-            dwg_source = cfg.get('dwg_source', DEFAULT_DWG_INPUT)
-            resolved_dwg_path = resolve_dwg_dir(dwg_source)
+            paths = get_current_paths()
+            dwg_source = paths['dwg_source']
+            resolved_dwg_path = paths['resolved_dwg_dir']
+            pd_dir = paths['pd_dir']
+            att_dir = paths['att_dir']
+            output_dir = paths['output_dir']
 
-            active_pdf = get_active_pd_pdf()
+            active_pdf = get_active_pd_pdf(pd_dir)
             if not active_pdf or not os.path.exists(active_pdf):
                 self.send_json({'success': False, 'error': 'No active Production Order PDF found'}, status=400)
                 return
 
-            qc_form_path = os.path.join(ATT_FORM_DIR, "QC_check_sheet.pdf")
+            qc_form_path = os.path.join(att_dir, "QC_check_sheet.pdf")
             if not os.path.exists(qc_form_path):
-                self.send_json({'success': False, 'error': 'QC_check_sheet.pdf not found in att_form'}, status=400)
+                if os.path.exists(att_dir):
+                    pdfs = [f for f in os.listdir(att_dir) if f.lower().endswith('.pdf')]
+                    if pdfs:
+                        qc_form_path = os.path.join(att_dir, pdfs[0])
+            if not os.path.exists(qc_form_path):
+                qc_form_path = os.path.join(ATT_FORM_DIR, "QC_check_sheet.pdf")
+
+            if not os.path.exists(qc_form_path):
+                self.send_json({'success': False, 'error': f'QC_check_sheet.pdf not found in {att_dir}'}, status=400)
                 return
+
+            os.makedirs(output_dir, exist_ok=True)
 
             pd_groups = parse_pd_pdf(active_pdf)
             src_doc = fitz.open(active_pdf)
@@ -440,7 +601,7 @@ class AppHandler(BaseHTTPRequestHandler):
                         qc_doc.close()
 
                 if mode in ['split', 'both']:
-                    out_path = os.path.join(OUTPUT_DIR, f"{pd_no}.pdf")
+                    out_path = os.path.join(output_dir, f"{pd_no}.pdf")
                     single_doc.save(out_path)
                     files_created_count += 1
 
@@ -452,7 +613,7 @@ class AppHandler(BaseHTTPRequestHandler):
             src_doc.close()
 
             if combined_doc is not None:
-                combined_path = os.path.join(OUTPUT_DIR, "ALL_PD_COMBINED.pdf")
+                combined_path = os.path.join(output_dir, "ALL_PD_COMBINED.pdf")
                 combined_doc.save(combined_path)
                 combined_doc.close()
                 files_created_count += 1

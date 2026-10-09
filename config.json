@@ -1,3 +1,6 @@
 {
-  "dwg_source": "https://drive.google.com/drive/folders/1M-QDPilC7Nn-YW_5YxLQITUS6ZOYEyFm?usp=drive_link"
+  "dwg_source": "https://drive.google.com/drive/folders/1M-QDPilC7Nn-YW_5YxLQITUS6ZOYEyFm?usp=drive_link",
+  "pd_dir": "pdf_list",
+  "att_dir": "att_form",
+  "output_dir": "output"
 }
