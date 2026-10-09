@@ -1,5 +1,7 @@
 # Production-Prepare-Document
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/piromc-rgb/Production-Prepare-Document)
+
 ระบบจัดชุดเอกสารสำหรับเตรียมผลิต (Production Document Assembler)
 
 ระบบช่วยจัดชุดเอกสารสำหรับสายการผลิตอัตโนมัติ โดยรวมเอกสารสำคัญ 3 แหล่งเข้าด้วยกัน:

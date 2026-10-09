@@ -1,0 +1,13 @@
+{
+  "name": "Production Document Assembler",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "postCreateCommand": "pip install -r requirements.txt",
+  "postStartCommand": "python app.py 8088",
+  "forwardPorts": [8088],
+  "portsAttributes": {
+    "8088": {
+      "label": "Production Document Assembler Web App",
+      "onAutoForward": "openBrowser"
+    }
+  }
+}
