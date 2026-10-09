@@ -50,7 +50,7 @@
         </button>
 
         <!-- Refresh & Open Folder -->
-        <button onclick="refreshStatus()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+        <button onclick="refreshStatus(true)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
           รีเฟรช
         </button>
@@ -369,10 +369,29 @@
       }
     }
 
+    let outputCleared = false;
+
+    function clearTableDisplay(message) {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = `<tr><td colspan="7" class="py-12 text-center text-slate-400">
+        <div class="flex flex-col items-center justify-center space-y-2">
+          <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+          </div>
+          <p class="text-xs font-semibold text-slate-600">${message}</p>
+          <p class="text-[11px] text-slate-400">ไม่มีรายการในตาราง (กดปุ่ม <b>"จัดชุดเอกสารสำหรับเตรียมผลิต"</b> เพื่อสร้างใหม่ หรือกด <b>"รีเฟรช"</b> เพื่อดู Preview)</p>
+        </div>
+      </td></tr>`;
+      document.getElementById('statTotal').innerText = 'ทั้งหมด: 0 รายการ';
+      document.getElementById('statMatched').innerText = 'พบ Drawing: 0';
+      document.getElementById('statMissing').innerText = 'รอ Drawing: 0';
+      document.getElementById('btnZip').classList.add('hidden');
+    }
+
     async function clearData(target) {
       const titles = {
         'input': 'ล้างไฟล์ใบสั่งผลิตทั้งหมดใน pdf_list',
-        'output': 'ล้างไฟล์ผลลัพธ์ทั้งหมดในโฟลเดอร์ output',
+        'output': 'ล้างไฟล์ผลลัพธ์ทั้งหมดใน output และเคลียร์รายการในตาราง',
         'all': 'ล้างไฟล์ทั้ง Input (pdf_list) และ Output (output)'
       };
       const confirmed = confirm(`คุณแน่ใจหรือไม่ว่าต้องการ ${titles[target]}?`);
@@ -386,8 +405,19 @@
         });
         const data = await res.json();
         if (data.success) {
-          await refreshStatus();
+          if (target === 'output' || target === 'all') {
+            outputCleared = true;
+            clearTableDisplay('ล้างไฟล์ผลลัพธ์ Output และเคลียร์รายการเรียบร้อยแล้ว');
+          }
+          if (target === 'input') {
+            outputCleared = true;
+            clearTableDisplay('ล้างไฟล์ใบสั่งผลิต (Input) เรียบร้อยแล้ว');
+          }
           alert(`ล้างข้อมูลสำเร็จ!\\n- ลบไฟล์ Input: ${data.deleted_input} ไฟล์\\n- ลบไฟล์ Output: ${data.deleted_output} ไฟล์`);
+          if (target === 'input' || target === 'all') {
+            document.getElementById('activeFileName').innerText = 'ไม่มีไฟล์ (กรุณาอัปโหลด)';
+            document.getElementById('activeFileCount').innerText = '0 ใบ';
+          }
         } else {
           alert('เกิดข้อผิดพลาดในการล้างข้อมูล');
         }
@@ -396,7 +426,9 @@
       }
     }
 
-    async function refreshStatus() {
+    async function refreshStatus(force = false) {
+      if (outputCleared && !force) return;
+      outputCleared = false;
       try {
         const res = await fetch('/api/preview');
         const data = await res.json();
