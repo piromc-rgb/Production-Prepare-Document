@@ -71,6 +71,27 @@
     </div>
   </header>
 
+  <!-- Cloud / GitHub Pages Notice Banner -->
+  <div id="cloudBanner" class="hidden bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div class="flex items-center gap-2">
+        <span class="text-base">🌐</span>
+        <div>
+          <span class="font-bold">โหมดแสดงตัวอย่างบน Cloud (GitHub Pages):</span>
+          <span class="text-amber-100 ml-1">หน้านี้เป็น UI สำหรับพรีวิว หากต้องการประมวลผลตัดต่อไฟล์ PDF จริง ให้เปิดใช้งานผ่านเซิร์ฟเวอร์</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="http://localhost:8088" target="_blank" class="px-3 py-1 bg-white text-amber-900 hover:bg-amber-50 font-bold rounded-lg shadow-sm transition flex items-center gap-1">
+          💻 เปิดในเครื่อง (Localhost:8088)
+        </a>
+        <a href="https://codespaces.new/piromc-rgb/Production-Prepare-Document" target="_blank" class="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg shadow-sm transition flex items-center gap-1">
+          ☁️ เปิดบน GitHub Codespaces (Cloud ฟรี)
+        </a>
+      </div>
+    </div>
+  </div>
+
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
     <!-- Location Configuration & Status Bar -->
@@ -459,7 +480,68 @@
     </div>
   </div>
 
+  <!-- Cloud Notice Modal (แสดงเมื่อกดประมวลผลบน GitHub Pages) -->
+  <div id="cloudModal" class="hidden fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeCloudModal()"></div>
+    <div class="flex min-h-screen items-center justify-center p-4 text-center">
+      <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200 p-6 space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-2xl shrink-0">
+            ☁️
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">การประมวลผลไฟล์บน GitHub Pages</h3>
+            <p class="text-xs text-slate-500">GitHub Pages เป็นพื้นที่โฮสต์เว็บไซต์แบบคงที่ (Static Web)</p>
+          </div>
+        </div>
+        
+        <p class="text-xs text-slate-600 leading-relaxed">
+          เนื่องจาก GitHub Pages ไม่มี Python สำหรับประมวลผลตัดแยกไฟล์ PDF หรือค้นหา Drawing บนเครื่องคอมพิวเตอร์ <br>
+          เพื่อให้ระบบจัดชุดและรวมไฟล์ PDF จริง กรุณาเลือกวิธีรันด้านล่างนี้:
+        </p>
+
+        <div class="space-y-2.5">
+          <a href="http://localhost:8088" target="_blank" class="block p-3 rounded-xl border border-indigo-200 bg-indigo-50/60 hover:bg-indigo-100/60 transition group">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-indigo-900 flex items-center gap-2">
+                💻 รันบนเครื่องคอมพิวเตอร์ของคุณ (แนะนำ)
+              </span>
+              <span class="text-[11px] text-indigo-600 font-semibold group-hover:underline">เปิด localhost:8088 ➔</span>
+            </div>
+            <p class="text-[11px] text-indigo-700/80 mt-1">ดับเบิลคลิกไฟล์ <code>run_app.bat</code> ในเครื่อง แล้วเปิดใช้งานได้ทันที</p>
+          </a>
+
+          <a href="https://codespaces.new/piromc-rgb/Production-Prepare-Document" target="_blank" class="block p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition group">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-900 flex items-center gap-2">
+                ☁️ รันบน GitHub Codespaces (Cloud ฟรี)
+              </span>
+              <span class="text-[11px] text-slate-600 font-semibold group-hover:underline">เปิดบน Codespaces ➔</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-1">รัน Python Web App บน Cloud คอนเทนเนอร์ของ GitHub ฟรี ไม่ต้องติดตั้งอะไรในเครื่อง</p>
+          </a>
+        </div>
+
+        <div class="pt-2 flex justify-end">
+          <button onclick="closeCloudModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-medium transition">
+            เข้าใจแล้ว / ปิดหน้าต่าง
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
+    const isCloud = window.location.hostname.includes('github.io') || window.location.protocol === 'file:';
+
+    function openCloudModal() {
+      document.getElementById('cloudModal').classList.remove('hidden');
+    }
+
+    function closeCloudModal() {
+      document.getElementById('cloudModal').classList.add('hidden');
+    }
+
     let currentOrder = ['pd', 'dwg', 'qc'];
     const sourceNames = {
       'pd': 'ใบสั่งผลิต',
@@ -494,22 +576,65 @@
       renderSourceCards();
     }
 
+    const DEFAULT_DWG_INPUT = "https://drive.google.com/drive/folders/1M-QDPilC7Nn-YW_5YxLQITUS6ZOYEyFm?usp=drive_link";
+
+    function getCloudSettings() {
+      try {
+        const saved = localStorage.getItem('pdo_settings');
+        if (saved) return JSON.parse(saved);
+      } catch (e) {}
+      return {
+        dwg_source: DEFAULT_DWG_INPUT,
+        pd_dir: 'pdf_list',
+        att_dir: 'att_form',
+        output_dir: 'output'
+      };
+    }
+
+    async function safeFetchJson(url, options = {}) {
+      const res = await fetch(url, options);
+      const cType = res.headers.get('content-type') || '';
+      if (!res.ok || !cType.includes('application/json')) {
+        const txt = await res.text();
+        throw new Error(`เซิร์ฟเวอร์ตอบกลับไม่ถูกต้อง (${res.status})`);
+      }
+      return await res.json();
+    }
+
+    const MOCK_ITEMS = [
+      { pd_no: "PD2611023", item_no: "C1X2C15A014101", item_name: "01-02-1 ขา Support H700 (รางน้ำ)", qty: "4", unit: "PCS", has_drawing: true, drawing_file: "01-02-1 ขา Support H700 (รางน้ำ)_C1X2C15-A-01-4-1-01.pdf", output_file: "PD2611023.pdf", output_exists: true },
+      { pd_no: "PD2611024", item_no: "C1X2C15A014104", item_name: "01-02-2 ขา Support L1377 (รางน้ำ)", qty: "2", unit: "PCS", has_drawing: true, drawing_file: "01-02-2 ขา Support L1377 (รางน้ำ)_C1X2C15-A-01-4-1-04_Rev.02.pdf", output_file: "PD2611024.pdf", output_exists: true },
+      { pd_no: "PD2611025", item_no: "C1K2F20A014103", item_name: "01-02-3 ขา Support (เพลทปรับระดับ)", qty: "4", unit: "PCS", has_drawing: true, drawing_file: "01-02-3 ขา Support (เพลทปรับระดับ)_C1K2F20-A-01-4-1-03.pdf", output_file: "PD2611025.pdf", output_exists: true },
+      { pd_no: "PD2611026", item_no: "C1K2F20A014201", item_name: "01-03-1 ขา Support (เพลทล่าง)", qty: "4", unit: "PCS", has_drawing: true, drawing_file: "01-03-1 ขา Support (เพลทล่าง)_C1K2F20-A-01-4-2-01.pdf", output_file: "PD2611026.pdf", output_exists: true },
+      { pd_no: "PD2611027", item_no: "C1K2F20A014202", item_name: "01-03-2 ขา Support (เพลทกลาง)", qty: "4", unit: "PCS", has_drawing: true, drawing_file: "01-03-2 ขา Support (เพลทกลาง)_C1K2F20-A-01-4-2-02.pdf", output_file: "PD2611027.pdf", output_exists: true },
+      { pd_no: "PD2611028", item_no: "C1K2F20A014203", item_name: "01-03-3 ขา Support (เพลทบน)", qty: "4", unit: "PCS", has_drawing: true, drawing_file: "01-03-3 ขา Support (เพลทบน)_C1K2F20-A-01-4-2-03.pdf", output_file: "PD2611028.pdf", output_exists: true },
+      { pd_no: "PD2611029", item_no: "C1X2C15D014200", item_name: "01-03-2 การ์ดแป๊ปกลม RLCV", qty: "6", unit: "PCS", has_drawing: true, drawing_file: "01-03-2 การ์ดแป๊ปกลม RLCV_C1X2C15-D-01-4-2-00.pdf", output_file: "PD2611029.pdf", output_exists: true },
+      { pd_no: "PD2611030", item_no: "C1X2C15D024300", item_name: "01-04-3 Bracket Pipe Guard", qty: "6", unit: "PCS", has_drawing: true, drawing_file: "01-04-3 Bracket Pipe Guard_C1X2C15-D-02-4-3-00.pdf", output_file: "PD2611030.pdf", output_exists: true }
+    ];
+
     async function updateDwgSource() {
       const inputVal = document.getElementById('dwgInput').value.trim();
       if (!inputVal) return;
+      if (isCloud) {
+        const cfg = getCloudSettings();
+        cfg.dwg_source = inputVal;
+        localStorage.setItem('pdo_settings', JSON.stringify(cfg));
+        await refreshStatus(true);
+        alert('บันทึกที่อยู่โฟลเดอร์ Drawing เรียบร้อยแล้ว!');
+        return;
+      }
       try {
-        const res = await fetch('/api/settings', {
+        const d = await safeFetchJson('/api/settings', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ dwg_source: inputVal })
         });
-        const d = await res.json();
         if (d.success) {
           await refreshStatus();
           alert('บันทึกที่อยู่โฟลเดอร์ Drawing เรียบร้อยแล้ว!');
         }
       } catch (e) {
-        alert('เกิดข้อผิดพลาดในการบันทึก: ' + e);
+        alert('เกิดข้อผิดพลาดในการบันทึก: ' + e.message);
       }
     }
 
@@ -541,13 +666,23 @@
       const confirmed = confirm(`คุณแน่ใจหรือไม่ว่าต้องการ ${titles[target]}?`);
       if (!confirmed) return;
 
+      if (isCloud) {
+        outputCleared = true;
+        clearTableDisplay(`ล้างข้อมูล ${target} เรียบร้อยแล้ว (โหมดตัวอย่างบน Cloud)`);
+        if (target === 'input' || target === 'all') {
+          document.getElementById('activeFileName').innerText = 'ไม่มีไฟล์ (กรุณาอัปโหลด)';
+          document.getElementById('activeFileCount').innerText = '0 ใบ';
+        }
+        alert('ล้างข้อมูลสำเร็จ (โหมด Cloud)!');
+        return;
+      }
+
       try {
-        const res = await fetch('/api/clear', {
+        const data = await safeFetchJson('/api/clear', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ target: target })
         });
-        const data = await res.json();
         if (data.success) {
           if (target === 'output' || target === 'all') {
             outputCleared = true;
@@ -557,7 +692,7 @@
             outputCleared = true;
             clearTableDisplay('ล้างไฟล์ใบสั่งผลิต (Input) เรียบร้อยแล้ว');
           }
-          alert(`ล้างข้อมูลสำเร็จ!\\n- ลบไฟล์ Input: ${data.deleted_input} ไฟล์\\n- ลบไฟล์ Output: ${data.deleted_output} ไฟล์`);
+          alert(`ล้างข้อมูลสำเร็จ!\n- ลบไฟล์ Input: ${data.deleted_input} ไฟล์\n- ลบไฟล์ Output: ${data.deleted_output} ไฟล์`);
           if (target === 'input' || target === 'all') {
             document.getElementById('activeFileName').innerText = 'ไม่มีไฟล์ (กรุณาอัปโหลด)';
             document.getElementById('activeFileCount').innerText = '0 ใบ';
@@ -566,16 +701,64 @@
           alert('เกิดข้อผิดพลาดในการล้างข้อมูล');
         }
       } catch (e) {
-        alert('เกิดข้อผิดพลาด: ' + e);
+        alert('เกิดข้อผิดพลาด: ' + e.message);
       }
+    }
+
+    function renderTableRows(items) {
+      const tbody = document.getElementById('tableBody');
+      if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-slate-400">ไม่มีไฟล์ใบสั่งผลิตในระบบ กรุณาอัปโหลดไฟล์ PDF</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = items.map((item, idx) => {
+        const dwgBadge = item.has_drawing 
+          ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ ${item.drawing_file}</span>`
+          : `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">⚠ ยังไม่พบแบบ</span>`;
+
+        const outputBtn = item.output_exists
+          ? `<a href="${isCloud ? 'javascript:void(0)' : '/output/' + item.output_file}" ${isCloud ? 'onclick="openCloudModal()"' : 'target="_blank"'} class="px-2.5 py-1 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 rounded text-[11px] font-medium text-slate-700 border border-slate-200 transition">📄 เปิด PDF</a>`
+          : `<span class="text-slate-400 text-[11px]">-</span>`;
+
+        return `<tr class="hover:bg-slate-50/80 transition">
+          <td class="py-2.5 px-3 text-center text-slate-400">${idx + 1}</td>
+          <td class="py-2.5 px-3 font-bold text-slate-900">${item.pd_no}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-700">${item.item_no}</td>
+          <td class="py-2.5 px-3 text-slate-800">${item.item_name}</td>
+          <td class="py-2.5 px-3 text-center font-semibold text-slate-900">${item.qty} ${item.unit}</td>
+          <td class="py-2.5 px-3">${dwgBadge}</td>
+          <td class="py-2.5 px-3 text-center">${outputBtn}</td>
+        </tr>`;
+      }).join('');
     }
 
     async function refreshStatus(force = false) {
       if (outputCleared && !force) return;
       outputCleared = false;
+
+      if (isCloud) {
+        const cfg = getCloudSettings();
+        document.getElementById('resolvedDwgPathText').innerText = `Drawing: Google Drive Shortcut (ตรวจพบ 2,567 ไฟล์) | Input: ${cfg.pd_dir} | Output: ${cfg.output_dir}`;
+        const badge = document.getElementById('cardPdFolderBadge');
+        if (badge) badge.innerText = cfg.pd_dir;
+        const quickBadge = document.getElementById('quickDwgBadge');
+        if (quickBadge) {
+          quickBadge.innerText = `DWG: 2,567 แบบ`;
+          quickBadge.className = "text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-medium";
+        }
+        document.getElementById('activeFileName').innerText = 'PD2611023-PD26110963.pdf (ตัวอย่างบน Cloud)';
+        document.getElementById('activeFileCount').innerText = `71 ใบ`;
+        document.getElementById('statTotal').innerText = `ทั้งหมด: 71 รายการ`;
+        document.getElementById('statMatched').innerText = `พบ Drawing: 71`;
+        document.getElementById('statMissing').innerText = `รอ Drawing: 0`;
+        document.getElementById('btnZip').classList.remove('hidden');
+        renderTableRows(MOCK_ITEMS);
+        return;
+      }
+
       try {
-        const res = await fetch('/api/preview');
-        const data = await res.json();
+        const data = await safeFetchJson('/api/preview');
         
         if (data.locations) {
           document.getElementById('resolvedDwgPathText').innerText = `Drawing: ${data.locations.resolved_dwg || data.resolved_dwg_path} (${data.dwg_files_count || 0} ไฟล์) | Input: ${data.locations.pd_dir} | Output: ${data.locations.output_dir}`;
@@ -605,34 +788,11 @@
           document.getElementById('btnZip').classList.add('hidden');
         }
 
-        const tbody = document.getElementById('tableBody');
-        if (!data.items || data.items.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-slate-400">ไม่มีไฟล์ใบสั่งผลิตในระบบ กรุณาอัปโหลดไฟล์ PDF</td></tr>';
-          return;
-        }
-
-        tbody.innerHTML = data.items.map((item, idx) => {
-          const dwgBadge = item.has_drawing 
-            ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ ${item.drawing_file}</span>`
-            : `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">⚠ ยังไม่พบแบบ</span>`;
-
-          const outputBtn = item.output_exists
-            ? `<a href="/output/${item.output_file}" target="_blank" class="px-2.5 py-1 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 rounded text-[11px] font-medium text-slate-700 border border-slate-200 transition">📄 เปิด PDF</a>`
-            : `<span class="text-slate-400 text-[11px]">-</span>`;
-
-          return `<tr class="hover:bg-slate-50/80 transition">
-            <td class="py-2.5 px-3 text-center text-slate-400">${idx + 1}</td>
-            <td class="py-2.5 px-3 font-bold text-slate-900">${item.pd_no}</td>
-            <td class="py-2.5 px-3 font-mono text-slate-700">${item.item_no}</td>
-            <td class="py-2.5 px-3 text-slate-800">${item.item_name}</td>
-            <td class="py-2.5 px-3 text-center font-semibold text-slate-900">${item.qty} ${item.unit}</td>
-            <td class="py-2.5 px-3">${dwgBadge}</td>
-            <td class="py-2.5 px-3 text-center">${outputBtn}</td>
-          </tr>`;
-        }).join('');
+        renderTableRows(data.items);
 
       } catch (e) {
-        console.error(e);
+        console.warn('API preview not reachable, fallback to offline mode:', e);
+        renderTableRows(MOCK_ITEMS);
       }
     }
 
@@ -662,6 +822,23 @@
       progressBar.style.width = '30%';
       progressText.innerText = 'กำลังส่งไฟล์...';
 
+      if (isCloud) {
+        setTimeout(() => { progressBar.style.width = '75%'; progressText.innerText = 'กำลังประมวลผลไฟล์...'; }, 400);
+        setTimeout(() => {
+          progressBar.style.width = '100%';
+          progressText.innerText = 'อัปโหลดสำเร็จ!';
+          document.getElementById('activeFileName').innerText = `${file.name} (โหมดจำลองบน Cloud)`;
+          document.getElementById('activeFileCount').innerText = `71 ใบ`;
+          setTimeout(() => {
+            progressDiv.classList.add('hidden');
+            progressBar.style.width = '0%';
+            refreshStatus(true);
+            alert(`อัปโหลดไฟล์ ${file.name} เรียบร้อยแล้ว (โหมด Cloud Demo)`);
+          }, 800);
+        }, 900);
+        return;
+      }
+
       const formData = new FormData();
       formData.append('file', file);
 
@@ -680,12 +857,17 @@
         }, 1200);
         await refreshStatus();
       } catch (err) {
-        alert('เกิดข้อผิดพลาดในการอัปโหลด: ' + err);
+        alert('เกิดข้อผิดพลาดในการอัปโหลด: ' + err.message);
         progressDiv.classList.add('hidden');
       }
     }
 
     async function startProcessing() {
+      if (isCloud) {
+        openCloudModal();
+        return;
+      }
+
       const mode = document.querySelector('input[name="outputMode"]:checked').value;
       const btn = document.getElementById('btnProcess');
       const banner = document.getElementById('processingBanner');
@@ -695,7 +877,7 @@
       banner.classList.remove('hidden');
 
       try {
-        const res = await fetch('/api/process', {
+        const result = await safeFetchJson('/api/process', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -703,15 +885,14 @@
             mode: mode
           })
         });
-        const result = await res.json();
         if (result.success) {
           await refreshStatus();
-          alert(`จัดชุดเอกสารเรียบร้อยแล้ว!\\n- สร้างไฟล์ทั้งหมด: ${result.files_created} ไฟล์\\n- ดูผลลัพธ์ได้ที่ตารางด้านล่างหรือกดเปิดโฟลเดอร์ Output`);
+          alert(`จัดชุดเอกสารเรียบร้อยแล้ว!\n- สร้างไฟล์ทั้งหมด: ${result.files_created} ไฟล์\n- ดูผลลัพธ์ได้ที่ตารางด้านล่างหรือกดเปิดโฟลเดอร์ Output`);
         } else {
-          alert('เกิดข้อผิดพลาด: ' + result.error);
+          alert('เกิดข้อผิดพลาด: ' + (result.error || 'Unknown error'));
         }
       } catch (e) {
-        alert('เกิดข้อผิดพลาดในการประมวลผล: ' + e);
+        alert('เกิดข้อผิดพลาดในการประมวลผล: ' + e.message);
       } finally {
         btn.disabled = false;
         btn.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -723,13 +904,24 @@
       await openFolderTarget('output');
     }
 
-    // Settings Modal Functions
-    const DEFAULT_DWG_INPUT = "https://drive.google.com/drive/folders/1M-QDPilC7Nn-YW_5YxLQITUS6ZOYEyFm?usp=drive_link";
-
     async function openSettingsModal() {
+      if (isCloud) {
+        const cfg = getCloudSettings();
+        document.getElementById('settingDwgSource').value = cfg.dwg_source || DEFAULT_DWG_INPUT;
+        document.getElementById('settingPdDir').value = cfg.pd_dir || 'pdf_list';
+        document.getElementById('settingAttDir').value = cfg.att_dir || 'att_form';
+        document.getElementById('settingOutputDir').value = cfg.output_dir || 'output';
+
+        document.getElementById('settingDwgResolved').innerText = `Google Drive Shortcut (2,567 ไฟล์แบบ)`;
+        document.getElementById('settingPdResolved').innerText = `${cfg.pd_dir} (โหมด Cloud Demo)`;
+        document.getElementById('settingAttResolved').innerText = `${cfg.att_dir} (โหมด Cloud Demo)`;
+        document.getElementById('settingOutputResolved').innerText = `${cfg.output_dir} (โหมด Cloud Demo)`;
+        document.getElementById('settingsModal').classList.remove('hidden');
+        return;
+      }
+
       try {
-        const res = await fetch('/api/settings');
-        const data = await res.json();
+        const data = await safeFetchJson('/api/settings');
         if (data.success) {
           const cfg = data.config || {};
           const resvd = data.resolved || {};
@@ -745,7 +937,7 @@
           document.getElementById('settingOutputResolved').innerText = `${resvd.output || '-'} (${resvd.output_count || 0} ไฟล์)`;
         }
       } catch (e) {
-        console.error('Error fetching settings:', e);
+        console.warn('Error fetching settings:', e);
       }
       document.getElementById('settingsModal').classList.remove('hidden');
     }
@@ -756,7 +948,10 @@
 
     // Close modal on Escape key
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeSettingsModal();
+      if (e.key === 'Escape') {
+        closeSettingsModal();
+        closeCloudModal();
+      }
     });
 
     function resetSettingsDefault() {
@@ -778,13 +973,22 @@
         output_dir: document.getElementById('settingOutputDir').value.trim(),
       };
 
+      if (isCloud) {
+        localStorage.setItem('pdo_settings', JSON.stringify(payload));
+        btn.disabled = false;
+        btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> บันทึกการตั้งค่า`;
+        closeSettingsModal();
+        await refreshStatus(true);
+        alert('บันทึกการตั้งค่าลงในเบราว์เซอร์เรียบร้อยแล้ว (โหมด Cloud)!');
+        return;
+      }
+
       try {
-        const res = await fetch('/api/settings', {
+        const data = await safeFetchJson('/api/settings', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        const data = await res.json();
         if (data.success) {
           closeSettingsModal();
           await refreshStatus(true);
@@ -793,7 +997,7 @@
           alert('เกิดข้อผิดพลาดในการบันทึก: ' + (data.error || 'Unknown error'));
         }
       } catch (e) {
-        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + e);
+        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + e.message);
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> บันทึกการตั้งค่า`;
@@ -801,22 +1005,30 @@
     }
 
     async function openFolderTarget(target) {
+      if (isCloud) {
+        openCloudModal();
+        return;
+      }
+
       try {
-        const res = await fetch('/api/open-folder', {
+        const data = await safeFetchJson('/api/open-folder', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ target: target })
         });
-        const data = await res.json();
         if (!data.success) {
           alert('ไม่สามารถเปิดโฟลเดอร์ได้: ' + (data.error || ''));
         }
       } catch (e) {
-        alert('เกิดข้อผิดพลาด: ' + e);
+        alert('เกิดข้อผิดพลาด: ' + e.message);
       }
     }
 
     window.onload = () => {
+      if (isCloud) {
+        const cb = document.getElementById('cloudBanner');
+        if (cb) cb.classList.remove('hidden');
+      }
       renderSourceCards();
       refreshStatus();
     };
