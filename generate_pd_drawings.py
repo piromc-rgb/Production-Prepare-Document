@@ -3,6 +3,22 @@ import re
 import fitz
 import pandas as pd
 
+DEFAULT_DWG_INPUT = "https://drive.google.com/drive/folders/1M-QDPilC7Nn-YW_5YxLQITUS6ZOYEyFm?usp=drive_link"
+
+def resolve_dwg_dir(path_or_url):
+    m = re.search(r'/folders/([a-zA-Z0-9_-]+)', path_or_url)
+    if m:
+        folder_id = m.group(1)
+        shortcut_path = os.path.join(r"G:\.shortcut-targets-by-id", folder_id)
+        if os.path.exists(shortcut_path):
+            return shortcut_path
+    if os.path.exists(path_or_url):
+        return path_or_url
+    fallback = r"G:\My Drive\staus overview\dwg"
+    if os.path.exists(fallback):
+        return fallback
+    return path_or_url
+
 def clean_code(s):
     return re.sub(r'[^A-Za-z0-9]', '', s).upper()
 
@@ -24,7 +40,7 @@ def format_qty(qty_str):
 def main():
     base_dir = r"g:\My Drive\pdo_prepare_print"
     pdf_source = os.path.join(base_dir, "pd_list", "PD2611023-PD26110963.pdf")
-    dwg_root = r"G:\My Drive\staus overview\dwg"
+    dwg_root = resolve_dwg_dir(DEFAULT_DWG_INPUT)
     qc_form_path = os.path.join(base_dir, "att_form", "QC_check_sheet.pdf")
     output_dir = os.path.join(base_dir, "output")
     os.makedirs(output_dir, exist_ok=True)
@@ -44,7 +60,7 @@ def main():
     def clean_thai(t):
         return t.translate(pua_map)
 
-    pd_groups = {} # pd_no -> {'pages': [page_idx...], 'item_no': ..., 'item_name': ..., 'qty': ...}
+    pd_groups = {}
     for p_idx in range(len(src_doc)):
         text = src_doc[p_idx].get_text()
         m_pd = re.search(r'Production Order\s*:\s*(PD\d+)', text)
@@ -119,22 +135,17 @@ def main():
             except Exception as e:
                 print(f"Error reading drawing {selected_dwg[1]}: {e}")
 
-        # Step C: Prepare QC Check Sheet with PD & QTY stamped, then append as LAST page
+        # Step C: Prepare QC Check Sheet
         qc_doc = fitz.open(qc_form_path)
         qc_page = qc_doc[0]
-
-        # White out dots for PD slot and print PD number
         qc_page.draw_rect(fitz.Rect(132, 69, 204, 81), color=None, fill=(1, 1, 1))
         qc_page.insert_text(fitz.Point(133, 78.5), pd_no, fontsize=8.5, fontname='helv', color=(0, 0, 0))
 
-        # White out dots for QTY slot and print centered QTY
         qc_page.draw_rect(fitz.Rect(415, 69, 454, 81), color=None, fill=(1, 1, 1))
-        # Center the QTY text
         text_width = len(qty_formatted) * 5.2
         x_qty = 415 + (454 - 415 - text_width) / 2
         qc_page.insert_text(fitz.Point(max(416, x_qty), 78.5), qty_formatted, fontsize=8.5, fontname='helv', color=(0, 0, 0))
 
-        # Append customized QC page to out_doc
         out_doc.insert_pdf(qc_doc)
         qc_doc.close()
 

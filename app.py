@@ -14,7 +14,38 @@ PDF_LIST_DIR = os.path.join(BASE_DIR, "pdf_list")
 PD_LIST_DIR = os.path.join(BASE_DIR, "pd_list")
 ATT_FORM_DIR = os.path.join(BASE_DIR, "att_form")
 OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-DWG_DIR = r"G:\My Drive\staus overview\dwg"
+CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
+
+DEFAULT_DWG_INPUT = "https://drive.google.com/drive/folders/1M-QDPilC7Nn-YW_5YxLQITUS6ZOYEyFm?usp=drive_link"
+
+def load_config():
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {'dwg_source': DEFAULT_DWG_INPUT}
+
+def save_config(cfg):
+    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+        json.dump(cfg, f, ensure_ascii=False, indent=2)
+
+def resolve_dwg_dir(path_or_url):
+    # If Google Drive folder URL, extract folder ID
+    m = re.search(r'/folders/([a-zA-Z0-9_-]+)', path_or_url)
+    if m:
+        folder_id = m.group(1)
+        shortcut_path = os.path.join(r"G:\.shortcut-targets-by-id", folder_id)
+        if os.path.exists(shortcut_path):
+            return shortcut_path
+    if os.path.exists(path_or_url):
+        return path_or_url
+    # Fallback to known local path
+    fallback = r"G:\My Drive\staus overview\dwg"
+    if os.path.exists(fallback):
+        return fallback
+    return path_or_url
 
 os.makedirs(PDF_LIST_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -49,17 +80,16 @@ def format_qty(qty_str):
     except Exception:
         return str(qty_str)
 
-def get_dwg_files():
+def get_dwg_files(resolved_dwg_path):
     dwg_files = []
-    if os.path.exists(DWG_DIR):
-        for root, dirs, files in os.walk(DWG_DIR):
+    if os.path.exists(resolved_dwg_path):
+        for root, dirs, files in os.walk(resolved_dwg_path):
             for f in files:
                 if f.lower().endswith('.pdf'):
                     dwg_files.append((f, os.path.join(root, f)))
     return dwg_files
 
 def get_active_pd_pdf():
-    # Check pdf_list first, then pd_list
     for d in [PDF_LIST_DIR, PD_LIST_DIR]:
         if os.path.exists(d):
             pdfs = [f for f in os.listdir(d) if f.lower().endswith('.pdf')]
@@ -107,8 +137,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Sarabun', sans-serif; background-color: #f1f5f9; }
-    .drag-item { cursor: grab; user-select: none; }
-    .drag-item:active { cursor: grabbing; }
   </style>
 </head>
 <body class="text-slate-800 antialiased min-h-screen">
@@ -125,7 +153,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <div>
           <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
             ระบบจัดชุดเอกสารสำหรับเตรียมผลิต
-            <span class="text-xs bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 px-2 py-0.5 rounded-full font-normal">v2.0</span>
+            <span class="text-xs bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 px-2 py-0.5 rounded-full font-normal">v2.1</span>
           </h1>
           <p class="text-xs text-slate-400">Automated Production Order, Drawing & QC Checklist Bundler</p>
         </div>
@@ -144,6 +172,27 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   </header>
 
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- DWG Folder Configuration Bar -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+          </div>
+          <div>
+            <h2 class="text-xs font-bold text-slate-800">แหล่งเก็บไฟล์ Drawing (DWG Folder / Link Google Drive)</h2>
+            <p id="resolvedDwgPathText" class="text-[11px] text-slate-500 truncate max-w-xl">กำลังตรวจสอบ...</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 w-full md:w-auto">
+          <input type="text" id="dwgInput" class="text-xs px-3 py-1.5 border border-slate-300 rounded-lg w-full md:w-96 focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="ลิงก์ Google Drive หรือพาธในเครื่อง">
+          <button onclick="updateDwgSource()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold whitespace-nowrap transition">
+            บันทึกที่อยู่
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Top Grid: Upload & Sources Config -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -316,7 +365,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         </svg>
         <div>
           <h4 class="text-xs font-bold text-indigo-900">กำลังจัดชุดเอกสารเตรียมผลิต...</h4>
-          <p id="processingDetail" class="text-[11px] text-indigo-700">กำลังจับคู่ Drawing และใส่ข้อมูลใบ QC...</p>
+          <p id="processingDetail" class="text-[11px] text-indigo-700">กำลังค้นหาแบบ Drawing และสร้างไฟล์ตามที่กำหนด...</p>
         </div>
       </div>
       <div class="w-32 bg-indigo-200 rounded-full h-2 overflow-hidden">
@@ -402,11 +451,33 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       renderSourceCards();
     }
 
+    async function updateDwgSource() {
+      const inputVal = document.getElementById('dwgInput').value.trim();
+      if (!inputVal) return;
+      try {
+        const res = await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dwg_source: inputVal })
+        });
+        const d = await res.json();
+        if (d.success) {
+          await refreshStatus();
+          alert('บันทึกที่อยู่โฟลเดอร์ Drawing เรียบร้อยแล้ว!');
+        }
+      } catch (e) {
+        alert('เกิดข้อผิดพลาดในการบันทึก: ' + e);
+      }
+    }
+
     async function refreshStatus() {
       try {
         const res = await fetch('/api/preview');
         const data = await res.json();
         
+        document.getElementById('dwgInput').value = data.dwg_source || '';
+        document.getElementById('resolvedDwgPathText').innerText = `โฟลเดอร์ในเครื่อง: ${data.resolved_dwg_path} (${data.dwg_files_count || 0} ไฟล์แบบ PDF)`;
+
         document.getElementById('activeFileName').innerText = data.active_file || 'ไม่มีไฟล์';
         document.getElementById('activeFileCount').innerText = `${data.total_pds || 0} ใบ`;
 
@@ -538,7 +609,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       await fetch('/api/open-folder', { method: 'POST' });
     }
 
-    // Init
     window.onload = () => {
       renderSourceCards();
       refreshStatus();
@@ -550,7 +620,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
 class AppHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
-        # Concise logging
         pass
 
     def send_json(self, data, status=200):
@@ -575,21 +644,25 @@ class AppHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/preview":
+            cfg = load_config()
+            dwg_source = cfg.get('dwg_source', DEFAULT_DWG_INPUT)
+            resolved_dwg_path = resolve_dwg_dir(dwg_source)
+
             active_pdf = get_active_pd_pdf()
             items_list = []
             matched_count = 0
             missing_count = 0
 
+            dwg_files = get_dwg_files(resolved_dwg_path)
+
             if active_pdf and os.path.exists(active_pdf):
                 pd_groups = parse_pd_pdf(active_pdf)
-                dwg_files = get_dwg_files()
 
                 for pd_no, data in pd_groups.items():
                     item_no = data['item_no']
                     item_name = data['item_name']
                     qty_fmt = format_qty(data['qty'])
 
-                    # check drawing match
                     matched_dwgs = []
                     clean_target = clean_code(item_no)
                     for fname, fpath in dwg_files:
@@ -625,6 +698,9 @@ class AppHandler(BaseHTTPRequestHandler):
             output_files = [f for f in os.listdir(OUTPUT_DIR) if f.lower().endswith('.pdf')] if os.path.exists(OUTPUT_DIR) else []
 
             self.send_json({
+                'dwg_source': dwg_source,
+                'resolved_dwg_path': resolved_dwg_path,
+                'dwg_files_count': len(dwg_files),
                 'active_file': os.path.basename(active_pdf) if active_pdf else None,
                 'total_pds': len(items_list),
                 'matched_dwg': matched_count,
@@ -671,6 +747,16 @@ class AppHandler(BaseHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
 
+        if path == "/api/settings":
+            length = int(self.headers.get('Content-Length', 0))
+            payload = json.loads(self.rfile.read(length).decode('utf-8'))
+            cfg = load_config()
+            if 'dwg_source' in payload:
+                cfg['dwg_source'] = payload['dwg_source'].strip()
+                save_config(cfg)
+            self.send_json({'success': True, 'config': cfg})
+            return
+
         if path == "/api/open-folder":
             try:
                 if sys.platform == 'win32':
@@ -690,7 +776,6 @@ class AppHandler(BaseHTTPRequestHandler):
             content_length = int(self.headers.get('Content-Length', 0))
             post_data = self.rfile.read(content_length)
 
-            # Simple robust multipart boundary extraction
             boundary_bytes = boundary.encode('latin1')
             parts = post_data.split(b'--' + boundary_bytes)
 
@@ -707,7 +792,6 @@ class AppHandler(BaseHTTPRequestHandler):
                             target_path = os.path.join(PDF_LIST_DIR, clean_fname)
                             with open(target_path, 'wb') as f_out:
                                 f_out.write(body)
-                            # Also copy to pd_list for consistency
                             shutil.copy2(target_path, os.path.join(PD_LIST_DIR, clean_fname))
                             saved_filename = clean_fname
 
@@ -721,7 +805,11 @@ class AppHandler(BaseHTTPRequestHandler):
             length = int(self.headers.get('Content-Length', 0))
             payload = json.loads(self.rfile.read(length).decode('utf-8'))
             order = payload.get('order', ['pd', 'dwg', 'qc'])
-            mode = payload.get('mode', 'split') # split, merge, both
+            mode = payload.get('mode', 'split')
+
+            cfg = load_config()
+            dwg_source = cfg.get('dwg_source', DEFAULT_DWG_INPUT)
+            resolved_dwg_path = resolve_dwg_dir(dwg_source)
 
             active_pdf = get_active_pd_pdf()
             if not active_pdf or not os.path.exists(active_pdf):
@@ -735,7 +823,7 @@ class AppHandler(BaseHTTPRequestHandler):
 
             pd_groups = parse_pd_pdf(active_pdf)
             src_doc = fitz.open(active_pdf)
-            dwg_files = get_dwg_files()
+            dwg_files = get_dwg_files(resolved_dwg_path)
 
             files_created_count = 0
             combined_doc = fitz.open() if mode in ['merge', 'both'] else None
@@ -744,7 +832,6 @@ class AppHandler(BaseHTTPRequestHandler):
                 item_no = data['item_no']
                 qty_formatted = format_qty(data['qty'])
 
-                # 1. Matching Drawing
                 matched_dwgs = []
                 clean_target = clean_code(item_no)
                 for fname, fpath in dwg_files:
@@ -758,17 +845,13 @@ class AppHandler(BaseHTTPRequestHandler):
                     matched_dwgs.sort(key=lambda x: x[0], reverse=True)
                     selected_dwg = matched_dwgs[0]
 
-                # Document for this single PD
                 single_doc = fitz.open()
 
-                # Assemble in the requested order!
                 for source_key in order:
                     if source_key == 'pd':
-                        # Append PD pages
                         for p in data['pages']:
                             single_doc.insert_pdf(src_doc, from_page=p, to_page=p)
                     elif source_key == 'dwg':
-                        # Append Drawing pages
                         if selected_dwg:
                             try:
                                 d_doc = fitz.open(selected_dwg[2])
@@ -777,13 +860,11 @@ class AppHandler(BaseHTTPRequestHandler):
                             except Exception as e:
                                 print(f"Error reading dwg: {e}")
                     elif source_key == 'qc':
-                        # Append QC page stamped
                         qc_doc = fitz.open(qc_form_path)
                         qc_page = qc_doc[0]
-                        # Stamp PD
                         qc_page.draw_rect(fitz.Rect(132, 69, 204, 81), color=None, fill=(1, 1, 1))
                         qc_page.insert_text(fitz.Point(133, 78.5), pd_no, fontsize=8.5, fontname='helv', color=(0, 0, 0))
-                        # Stamp QTY
+
                         qc_page.draw_rect(fitz.Rect(415, 69, 454, 81), color=None, fill=(1, 1, 1))
                         text_width = len(qty_formatted) * 5.2
                         x_qty = 415 + (454 - 415 - text_width) / 2
@@ -791,13 +872,11 @@ class AppHandler(BaseHTTPRequestHandler):
                         single_doc.insert_pdf(qc_doc)
                         qc_doc.close()
 
-                # Save split file if required
                 if mode in ['split', 'both']:
                     out_path = os.path.join(OUTPUT_DIR, f"{pd_no}.pdf")
                     single_doc.save(out_path)
                     files_created_count += 1
 
-                # If merged file is requested, add single_doc into combined_doc
                 if combined_doc is not None:
                     combined_doc.insert_pdf(single_doc)
 
@@ -805,7 +884,6 @@ class AppHandler(BaseHTTPRequestHandler):
 
             src_doc.close()
 
-            # Save combined doc if required
             if combined_doc is not None:
                 combined_path = os.path.join(OUTPUT_DIR, "ALL_PD_COMBINED.pdf")
                 combined_doc.save(combined_path)
@@ -821,14 +899,14 @@ class AppHandler(BaseHTTPRequestHandler):
 
         self.send_error(404, "Not Found")
 
-def run(port=8080):
+def run(port=8088):
     server = ThreadingHTTPServer(('0.0.0.0', port), AppHandler)
     print(f"==================================================")
-    print(f" Web App started successfully!")
+    print(f" Web App started successfully on port {port}!")
     print(f" URL: http://localhost:{port}")
     print(f"==================================================")
     server.serve_forever()
 
 if __name__ == '__main__':
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8088
     run(port)
