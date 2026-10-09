@@ -33,6 +33,12 @@
 
       <!-- Action Buttons in Navbar -->
       <div class="flex flex-wrap items-center gap-2 text-xs">
+        <!-- Download Program Button -->
+        <a href="https://github.com/piromc-rgb/Production-Prepare-Document/archive/refs/heads/main.zip" target="_blank" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition font-medium flex items-center gap-1.5 shadow-sm" title="ดาวน์โหลดโปรแกรมสำหรับเปิดใช้งานในเครื่องคอมพิวเตอร์ (ZIP)">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          <span>ดาวน์โหลด ZIP</span>
+        </a>
+
         <!-- Settings Button -->
         <button onclick="openSettingsModal()" class="px-3 py-1.5 bg-indigo-700 hover:bg-indigo-600 text-white border border-indigo-500/50 rounded-lg transition font-medium flex items-center gap-1.5 shadow-sm" title="ตั้งค่าที่อยู่โฟลเดอร์ต่างๆ (Locations)">
           <svg class="w-3.5 h-3.5 text-indigo-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,6 +99,75 @@
   </div>
 
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- Quick Start Guide & Download Box (คำแนะนำและลิงก์ดาวน์โหลดโปรแกรม) -->
+    <div id="quickGuideCard" class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-2xl shadow-md border border-slate-700/60 p-5 text-white">
+      <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
+        
+        <!-- Left: Steps Guide -->
+        <div class="space-y-3 flex-1">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[11px] font-bold flex items-center gap-1">
+              ⚡ วิธีเปิดใช้งานบนเครื่องคอมพิวเตอร์ของคุณ (Local Server)
+            </span>
+            <span class="text-[11px] text-slate-400">สำหรับเครื่อง PC ที่ต้องการประมวลผลไฟล์ PDF จริง</span>
+          </div>
+
+          <!-- 3 Steps -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <!-- Step 1 -->
+            <div class="bg-white/5 border border-white/10 rounded-xl p-3 space-y-1 hover:bg-white/10 transition">
+              <div class="font-bold text-amber-300 flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-amber-400/20 text-amber-300 flex items-center justify-center text-[10px] font-bold">1</span>
+                ดาวน์โหลดและแตกไฟล์
+              </div>
+              <p class="text-[11px] text-slate-300 leading-relaxed">
+                กดปุ่ม <b>"ดาวน์โหลด ZIP"</b> แตกไฟล์ (Extract All) ลงในเครื่อง
+              </p>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="bg-white/5 border border-white/10 rounded-xl p-3 space-y-1 hover:bg-white/10 transition">
+              <div class="font-bold text-indigo-300 flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-indigo-400/20 text-indigo-300 flex items-center justify-center text-[10px] font-bold">2</span>
+                ดับเบิลคลิก run_app.bat
+              </div>
+              <p class="text-[11px] text-slate-300 leading-relaxed">
+                ระบบจะตรวจหา Python และติดตั้งสิ่งที่ต้องใช้ให้อัตโนมัติในเครื่อง
+              </p>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="bg-white/5 border border-white/10 rounded-xl p-3 space-y-1 hover:bg-white/10 transition">
+              <div class="font-bold text-emerald-300 flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-emerald-400/20 text-emerald-300 flex items-center justify-center text-[10px] font-bold">3</span>
+                ใช้งานที่ localhost:8088
+              </div>
+              <p class="text-[11px] text-slate-300 leading-relaxed">
+                หน้าเว็บจะเปิดขึ้นมาอัตโนมัติ พร้อมค้นหาแบบ Drawing และจัดชุด PDF
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Action Buttons -->
+        <div class="flex flex-col sm:flex-row lg:flex-col gap-2.5 w-full lg:w-64 shrink-0 justify-center">
+          <a href="https://github.com/piromc-rgb/Production-Prepare-Document/archive/refs/heads/main.zip" target="_blank" class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs shadow-lg transition flex items-center justify-center gap-2 group">
+            <svg class="w-4 h-4 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            📥 ดาวน์โหลดโปรแกรม (ZIP)
+          </a>
+
+          <button onclick="checkAndOpenLocalhost()" class="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium rounded-xl text-xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+            💻 ตรวจสอบ & เปิด Localhost:8088
+          </button>
+
+          <a href="https://codespaces.new/piromc-rgb/Production-Prepare-Document" target="_blank" class="text-[11px] text-indigo-300 hover:text-white hover:underline text-center flex items-center justify-center gap-1">
+            ☁️ หรือเปิดใช้งานฟรีบน GitHub Codespaces
+          </a>
+        </div>
+
+      </div>
+    </div>
 
     <!-- Location Configuration & Status Bar -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
