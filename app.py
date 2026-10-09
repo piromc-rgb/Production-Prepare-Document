@@ -7,6 +7,54 @@ import zipfile
 import subprocess
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 import urllib.parse
+
+# กำหนด stdout ให้ปลอดภัยต่อ Windows CP874
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+if hasattr(sys.stderr, 'reconfigure'):
+    try:
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
+# ตรวจสอบแพ็กเกจที่จำเป็น หากยังไม่ได้ติดตั้งให้ติดตั้งให้อัตโนมัติ
+REQUIRED_PACKAGES = {
+    'fitz': 'pymupdf>=1.23.0',
+    'pandas': 'pandas>=2.0.0',
+    'openpyxl': 'openpyxl>=3.1.0'
+}
+
+def check_and_install_dependencies():
+    missing = []
+    for mod_name, pip_spec in REQUIRED_PACKAGES.items():
+        try:
+            __import__(mod_name)
+        except ImportError:
+            missing.append(pip_spec)
+    
+    if missing:
+        print("==================================================")
+        print(" [!] ตรวจพบสิ่งที่ต้องใช้ยังไม่ได้ติดตั้ง:")
+        for pkg in missing:
+            print(f"     - {pkg}")
+        print(" [*] กำลังดำเนินการติดตั้งให้อัตโนมัติ (Installing dependencies)...")
+        print("==================================================")
+        try:
+            cmd = [sys.executable, "-m", "pip", "install", *missing]
+            subprocess.check_call(cmd)
+            print(" [OK] ติดตั้งแพ็กเกจที่จำเป็นสำเร็จเรียบร้อยแล้ว!")
+        except Exception as e:
+            print(f" [ERROR] เกิดข้อผิดพลาดในการติดตั้งแพ็กเกจ: {e}")
+            print(" กรุณาติดตั้งด้วยตนเอง: pip install -r requirements.txt")
+            sys.exit(1)
+    else:
+        print(" [OK] ตรวจสอบ Dependencies: ติดตั้งครบถ้วนพร้อมใช้งาน (PyMuPDF, pandas, openpyxl)")
+
+check_and_install_dependencies()
+
 import fitz
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
