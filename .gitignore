@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# PDF files in working directories (protect production data)
+pdf_list/*
+!pdf_list/.gitkeep
+pd_list/*
+!pd_list/.gitkeep
+
+# Output and temporary artifacts
+output/*
+!output/.gitkeep
+*.zip
+*.xlsx
+*.csv
+
+# Operating System
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
