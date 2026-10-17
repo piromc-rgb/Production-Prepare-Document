@@ -288,7 +288,7 @@ class AppHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/check-update":
-            CURRENT_VERSION = "0.3"
+            CURRENT_VERSION = "0.5"
             remote_version = None
             has_update = False
             try:
