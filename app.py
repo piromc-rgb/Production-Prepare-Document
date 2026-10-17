@@ -465,6 +465,75 @@ class AppHandler(BaseHTTPRequestHandler):
                 shutil.copyfileobj(f, self.wfile)
             return
 
+        if path == "/api/open-folder":
+            query_params = urllib.parse.parse_qs(parsed.query)
+            target = query_params.get('target', ['output'])[0]
+            custom_path = query_params.get('custom_path', [''])[0].strip().strip('"').strip("'")
+            paths = get_current_paths()
+
+            target_dir = None
+            if custom_path and not custom_path.startswith(('http://', 'https://')):
+                if os.path.isabs(custom_path):
+                    target_dir = custom_path
+                else:
+                    target_dir = os.path.join(BASE_DIR, custom_path)
+
+            if not target_dir:
+                if target in ['pd', 'input']:
+                    target_dir = paths.get('pd_dir')
+                elif target == 'att':
+                    target_dir = paths.get('att_dir')
+                elif target == 'dwg':
+                    target_dir = paths.get('resolved_dwg_dir')
+                elif target == 'output':
+                    target_dir = paths.get('output_dir')
+                elif os.path.exists(target):
+                    target_dir = target
+                else:
+                    target_dir = paths.get('output_dir')
+
+            if target_dir:
+                try:
+                    os.makedirs(target_dir, exist_ok=True)
+                except Exception:
+                    pass
+
+            opened = False
+            if target_dir and os.path.exists(target_dir):
+                if sys.platform == 'win32':
+                    try:
+                        subprocess.Popen(['explorer', os.path.normpath(target_dir)])
+                        opened = True
+                    except Exception:
+                        try:
+                            os.startfile(target_dir)
+                            opened = True
+                        except Exception:
+                            pass
+                elif sys.platform == 'darwin':
+                    subprocess.run(['open', target_dir])
+                    opened = True
+                else:
+                    subprocess.run(['xdg-open', target_dir])
+                    opened = True
+
+            html = f"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>เปิดโฟลเดอร์</title></head>
+            <body style="font-family:sans-serif;text-align:center;padding:40px;background:#f8fafc;color:#1e293b;">
+            <div style="background:white;padding:24px;border-radius:12px;display:inline-block;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);max-width:500px;">
+                <div style="font-size:32px;">📂</div>
+                <h3 style="margin:12px 0 8px;">{'เปิดโฟลเดอร์ใน File Explorer สำเร็จ!' if opened else 'ไม่สามารถเปิดโฟลเดอร์ได้'}</h3>
+                <p style="font-size:13px;color:#64748b;word-break:break-all;">{target_dir}</p>
+                <p style="font-size:12px;color:#94a3b8;">หน้าต่างนี้จะปิดอัตโนมัติ...</p>
+            </div>
+            <script>setTimeout(() => window.close(), 1200);</script>
+            </body></html>""".encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/html; charset=utf-8')
+            self.send_header('Content-Length', str(len(html)))
+            self.end_headers()
+            self.wfile.write(html)
+            return
+
         self.send_error(404, "Not Found")
 
     def do_POST(self):
@@ -588,7 +657,10 @@ class AppHandler(BaseHTTPRequestHandler):
 
                 if target_dir and os.path.exists(target_dir):
                     if sys.platform == 'win32':
-                        os.startfile(target_dir)
+                        try:
+                            subprocess.Popen(['explorer', os.path.normpath(target_dir)])
+                        except Exception:
+                            os.startfile(target_dir)
                     elif sys.platform == 'darwin':
                         subprocess.run(['open', target_dir])
                     else:

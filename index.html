@@ -1167,15 +1167,20 @@
     async function openSettingsModal() {
       if (isCloud) {
         const cfg = getCloudSettings();
-        document.getElementById('settingDwgSource').value = cfg.dwg_source || DEFAULT_DWG_INPUT;
+        const dwgVal = cfg.dwg_source || DEFAULT_DWG_INPUT;
+        document.getElementById('settingDwgSource').value = dwgVal;
         document.getElementById('settingPdDir').value = cfg.pd_dir || 'pdf_list';
         document.getElementById('settingAttDir').value = cfg.att_dir || 'att_form';
         document.getElementById('settingOutputDir').value = cfg.output_dir || 'output';
 
-        document.getElementById('settingDwgResolved').innerText = `Google Drive Shortcut (2,567 ไฟล์แบบ)`;
-        document.getElementById('settingPdResolved').innerText = `${cfg.pd_dir} (โหมด Cloud Demo)`;
-        document.getElementById('settingAttResolved').innerText = `${cfg.att_dir} (โหมด Cloud Demo)`;
-        document.getElementById('settingOutputResolved').innerText = `${cfg.output_dir} (โหมด Cloud Demo)`;
+        if (dwgVal.startsWith('http://') || dwgVal.startsWith('https://')) {
+          document.getElementById('settingDwgResolved').innerText = `Google Drive Folder (เปิดดูไฟล์แบบผ่านเบราว์เซอร์)`;
+        } else {
+          document.getElementById('settingDwgResolved').innerText = `${dwgVal} (เปิดด้วย File Explorer ในเครื่อง)`;
+        }
+        document.getElementById('settingPdResolved').innerText = `${cfg.pd_dir} (เปิดด้วย File Explorer ในเครื่อง)`;
+        document.getElementById('settingAttResolved').innerText = `${cfg.att_dir} (เปิดด้วย File Explorer ในเครื่อง)`;
+        document.getElementById('settingOutputResolved').innerText = `${cfg.output_dir} (เปิดด้วย File Explorer ในเครื่อง)`;
         document.getElementById('settingsModal').classList.remove('hidden');
         return;
       }
@@ -1278,30 +1283,15 @@
         return;
       }
 
-      // 2. ถ้าอยู่บน Cloud (GitHub Pages): ยิงคำสั่งตรงไปที่ Local Server (http://127.0.0.1:8088) ในเครื่องผู้ใช้
+      // 2. ถ้าอยู่บน Cloud (GitHub Pages): ส่งคำสั่งตรงไปที่ Local Server (http://127.0.0.1:8088)
+      // ด้วย window.open เพื่อสั่งเปิด File Explorer ในเครื่องทันที
       if (isCloud) {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 2000);
-          const res = await fetch('http://127.0.0.1:8088/api/open-folder', {
-            method: 'POST',
-            signal: controller.signal,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ target: target, custom_path: customPath })
-          });
-          clearTimeout(timeoutId);
-          const data = await res.json();
-          if (data.success) {
-            return; // เปิดโฟลเดอร์บน Windows Explorer ในเครื่องสำเร็จ!
-          } else {
-            alert('ไม่สามารถเปิดโฟลเดอร์ได้: ' + (data.error || ''));
-            return;
-          }
-        } catch (e) {
-          // หากยังไม่ได้เปิด run_app.bat ในเครื่อง
-          openLocalhostSetupModal();
-          return;
+        const url = `http://127.0.0.1:8088/api/open-folder?target=${encodeURIComponent(target)}&custom_path=${encodeURIComponent(customPath)}`;
+        const w = window.open(url, '_blank', 'width=450,height=250');
+        if (!w) {
+          window.location.href = url;
         }
+        return;
       }
 
       // 3. ถ้าเปิดใช้งานผ่าน localhost:8088 โดยตรง
