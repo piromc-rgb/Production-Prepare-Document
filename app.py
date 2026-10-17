@@ -7,6 +7,7 @@ import zipfile
 import subprocess
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 import urllib.parse
+import urllib.request
 
 # กำหนด stdout ให้ปลอดภัยต่อ Windows CP874
 if hasattr(sys.stdout, 'reconfigure'):
@@ -267,12 +268,13 @@ class AppHandler(BaseHTTPRequestHandler):
             self.send_header('Content-Length', str(len(body)))
             self.end_headers()
             self.wfile.write(body)
+            return
+
         if path == "/api/check-update":
             CURRENT_VERSION = "0.3"
             remote_version = None
             has_update = False
             try:
-                import urllib.request
                 req = urllib.request.Request(
                     "https://raw.githubusercontent.com/piromc-rgb/Production-Prepare-Document/main/index.html",
                     headers={'User-Agent': 'Mozilla/5.0'}
