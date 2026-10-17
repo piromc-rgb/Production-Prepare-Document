@@ -1266,17 +1266,45 @@
     }
 
     async function openFolderTarget(target) {
-      if (isCloud) {
-        openCloudModal();
-        return;
-      }
-
       let customPath = '';
       if (target === 'dwg') customPath = document.getElementById('settingDwgSource')?.value?.trim() || '';
       if (target === 'pd') customPath = document.getElementById('settingPdDir')?.value?.trim() || '';
       if (target === 'att') customPath = document.getElementById('settingAttDir')?.value?.trim() || '';
       if (target === 'output') customPath = document.getElementById('settingOutputDir')?.value?.trim() || '';
 
+      // 1. ถ้าเป็นลิงก์ Google Drive หรือ Web URL ให้เปิดบน Browser ทันที (ใช้งานได้ทั้งบน Cloud และ Local)
+      if (customPath && (customPath.startsWith('http://') || customPath.startsWith('https://'))) {
+        window.open(customPath, '_blank');
+        return;
+      }
+
+      // 2. ถ้าอยู่บน Cloud (GitHub Pages): ยิงคำสั่งตรงไปที่ Local Server (http://127.0.0.1:8088) ในเครื่องผู้ใช้
+      if (isCloud) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 2000);
+          const res = await fetch('http://127.0.0.1:8088/api/open-folder', {
+            method: 'POST',
+            signal: controller.signal,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ target: target, custom_path: customPath })
+          });
+          clearTimeout(timeoutId);
+          const data = await res.json();
+          if (data.success) {
+            return; // เปิดโฟลเดอร์บน Windows Explorer ในเครื่องสำเร็จ!
+          } else {
+            alert('ไม่สามารถเปิดโฟลเดอร์ได้: ' + (data.error || ''));
+            return;
+          }
+        } catch (e) {
+          // หากยังไม่ได้เปิด run_app.bat ในเครื่อง
+          openLocalhostSetupModal();
+          return;
+        }
+      }
+
+      // 3. ถ้าเปิดใช้งานผ่าน localhost:8088 โดยตรง
       try {
         const data = await safeFetchJson('/api/open-folder', {
           method: 'POST',
