@@ -108,21 +108,38 @@ def resolve_dir_path(path_str, default_subfolder):
 def resolve_dwg_dir(path_or_url):
     if not path_or_url:
         path_or_url = DEFAULT_DWG_INPUT
-    m = re.search(r'/folders/([a-zA-Z0-9_-]+)', path_or_url)
+    clean_p = str(path_or_url).strip().strip('"').strip("'")
+    m = re.search(r'/folders/([a-zA-Z0-9_-]+)', clean_p)
     if m:
         folder_id = m.group(1)
         shortcut_path = os.path.join(r"G:\.shortcut-targets-by-id", folder_id)
         if os.path.exists(shortcut_path):
             return shortcut_path
-    if os.path.exists(path_or_url):
-        return path_or_url
-    local_sub = os.path.join(BASE_DIR, path_or_url)
+        fallback = r"G:\My Drive\staus overview\dwg"
+        if os.path.exists(fallback):
+            return fallback
+
+    if os.path.exists(clean_p):
+        return os.path.normpath(clean_p)
+
+    local_sub = os.path.join(BASE_DIR, clean_p)
     if os.path.exists(local_sub):
-        return local_sub
+        return os.path.normpath(local_sub)
+
+    # If it is a local folder path, auto-create it so it's ready to use
+    if not clean_p.startswith(('http://', 'https://')):
+        candidate = clean_p if os.path.isabs(clean_p) else local_sub
+        try:
+            os.makedirs(candidate, exist_ok=True)
+            if os.path.exists(candidate):
+                return os.path.normpath(candidate)
+        except Exception:
+            pass
+
     fallback = r"G:\My Drive\staus overview\dwg"
     if os.path.exists(fallback):
         return fallback
-    return path_or_url
+    return clean_p
 
 def get_current_paths():
     cfg = load_config()
@@ -537,26 +554,46 @@ class AppHandler(BaseHTTPRequestHandler):
                 length = int(self.headers.get('Content-Length', 0))
                 payload = json.loads(self.rfile.read(length).decode('utf-8')) if length > 0 else {}
                 target = payload.get('target', 'output')
+                custom_path = str(payload.get('custom_path', '')).strip().strip('"').strip("'")
                 paths = get_current_paths()
 
-                target_dir = paths.get('output_dir')
-                if target in ['pd', 'input']:
-                    target_dir = paths.get('pd_dir')
-                elif target == 'att':
-                    target_dir = paths.get('att_dir')
-                elif target == 'dwg':
-                    target_dir = paths.get('resolved_dwg_dir')
-                elif target == 'output':
-                    target_dir = paths.get('output_dir')
-                elif os.path.exists(target):
-                    target_dir = target
+                target_dir = None
+                if custom_path and not custom_path.startswith(('http://', 'https://')):
+                    if os.path.isabs(custom_path):
+                        target_dir = custom_path
+                    else:
+                        target_dir = os.path.join(BASE_DIR, custom_path)
+
+                if not target_dir:
+                    if target in ['pd', 'input']:
+                        target_dir = paths.get('pd_dir')
+                    elif target == 'att':
+                        target_dir = paths.get('att_dir')
+                    elif target == 'dwg':
+                        target_dir = paths.get('resolved_dwg_dir')
+                    elif target == 'output':
+                        target_dir = paths.get('output_dir')
+                    elif os.path.exists(target):
+                        target_dir = target
+                    else:
+                        target_dir = paths.get('output_dir')
+
+                if target_dir:
+                    try:
+                        os.makedirs(target_dir, exist_ok=True)
+                    except Exception:
+                        pass
 
                 if target_dir and os.path.exists(target_dir):
                     if sys.platform == 'win32':
                         os.startfile(target_dir)
+                    elif sys.platform == 'darwin':
+                        subprocess.run(['open', target_dir])
+                    else:
+                        subprocess.run(['xdg-open', target_dir])
                     self.send_json({'success': True, 'path': target_dir})
                 else:
-                    self.send_json({'success': False, 'error': f'โฟลเดอร์ {target_dir} ไม่พบในระบบ'}, status=400)
+                    self.send_json({'success': False, 'error': f'ไม่สามารถเปิดหรือสร้างโฟลเดอร์ {target_dir} ได้'}, status=400)
             except Exception as e:
                 self.send_json({'success': False, 'error': str(e)})
             return

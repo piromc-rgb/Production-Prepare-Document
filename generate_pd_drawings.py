@@ -6,18 +6,34 @@ import pandas as pd
 DEFAULT_DWG_INPUT = r"D:\Production-Prepare-Document-main\dwg"
 
 def resolve_dwg_dir(path_or_url):
-    m = re.search(r'/folders/([a-zA-Z0-9_-]+)', path_or_url)
+    if not path_or_url:
+        path_or_url = DEFAULT_DWG_INPUT
+    clean_p = str(path_or_url).strip().strip('"').strip("'")
+    m = re.search(r'/folders/([a-zA-Z0-9_-]+)', clean_p)
     if m:
         folder_id = m.group(1)
         shortcut_path = os.path.join(r"G:\.shortcut-targets-by-id", folder_id)
         if os.path.exists(shortcut_path):
             return shortcut_path
-    if os.path.exists(path_or_url):
-        return path_or_url
+        fallback = r"G:\My Drive\staus overview\dwg"
+        if os.path.exists(fallback):
+            return fallback
+
+    if os.path.exists(clean_p):
+        return os.path.normpath(clean_p)
+
+    if not clean_p.startswith(('http://', 'https://')):
+        try:
+            os.makedirs(clean_p, exist_ok=True)
+            if os.path.exists(clean_p):
+                return os.path.normpath(clean_p)
+        except Exception:
+            pass
+
     fallback = r"G:\My Drive\staus overview\dwg"
     if os.path.exists(fallback):
         return fallback
-    return path_or_url
+    return clean_p
 
 def clean_code(s):
     return re.sub(r'[^A-Za-z0-9]', '', s).upper()
