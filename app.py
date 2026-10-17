@@ -65,7 +65,7 @@ OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
 INDEX_HTML_PATH = os.path.join(BASE_DIR, "index.html")
 
-DEFAULT_DWG_INPUT = "https://drive.google.com/drive/folders/1M-QDPilC7Nn-YW_5YxLQITUS6ZOYEyFm?usp=drive_link"
+DEFAULT_DWG_INPUT = r"D:\Production-Prepare-Document-main\dwg"
 DEFAULT_CONFIG = {
     'dwg_source': DEFAULT_DWG_INPUT,
     'pd_dir': 'pdf_list',
@@ -105,6 +105,8 @@ def resolve_dir_path(path_str, default_subfolder):
     return os.path.normpath(p)
 
 def resolve_dwg_dir(path_or_url):
+    if not path_or_url:
+        path_or_url = DEFAULT_DWG_INPUT
     m = re.search(r'/folders/([a-zA-Z0-9_-]+)', path_or_url)
     if m:
         folder_id = m.group(1)
@@ -113,6 +115,9 @@ def resolve_dwg_dir(path_or_url):
             return shortcut_path
     if os.path.exists(path_or_url):
         return path_or_url
+    local_sub = os.path.join(BASE_DIR, path_or_url)
+    if os.path.exists(local_sub):
+        return local_sub
     fallback = r"G:\My Drive\staus overview\dwg"
     if os.path.exists(fallback):
         return fallback
@@ -262,6 +267,33 @@ class AppHandler(BaseHTTPRequestHandler):
             self.send_header('Content-Length', str(len(body)))
             self.end_headers()
             self.wfile.write(body)
+        if path == "/api/check-update":
+            CURRENT_VERSION = "0.3"
+            remote_version = None
+            has_update = False
+            try:
+                import urllib.request
+                req = urllib.request.Request(
+                    "https://raw.githubusercontent.com/piromc-rgb/Production-Prepare-Document/main/index.html",
+                    headers={'User-Agent': 'Mozilla/5.0'}
+                )
+                with urllib.request.urlopen(req, timeout=4) as resp:
+                    html_content = resp.read().decode('utf-8')
+                    m = re.search(r'id=["\']versionBadge["\'][^>]*>v?([\d\.]+)', html_content)
+                    if m:
+                        remote_version = m.group(1).strip()
+                        def parse_v(v):
+                            return [int(x) for x in v.split('.') if x.isdigit()]
+                        if parse_v(remote_version) > parse_v(CURRENT_VERSION):
+                            has_update = True
+            except Exception:
+                pass
+
+            self.send_json({
+                'current_version': f"v{CURRENT_VERSION}",
+                'remote_version': f"v{remote_version}" if remote_version else None,
+                'has_update': has_update
+            })
             return
 
         if path == "/api/settings":
@@ -523,6 +555,17 @@ class AppHandler(BaseHTTPRequestHandler):
                     self.send_json({'success': True, 'path': target_dir})
                 else:
                     self.send_json({'success': False, 'error': f'โฟลเดอร์ {target_dir} ไม่พบในระบบ'}, status=400)
+            except Exception as e:
+                self.send_json({'success': False, 'error': str(e)})
+            return
+
+        if path == "/api/do-update":
+            try:
+                res = subprocess.run(["git", "pull", "origin", "main"], cwd=BASE_DIR, capture_output=True, text=True, timeout=20)
+                if res.returncode == 0:
+                    self.send_json({'success': True, 'output': res.stdout})
+                else:
+                    self.send_json({'success': False, 'error': res.stderr or res.stdout})
             except Exception as e:
                 self.send_json({'success': False, 'error': str(e)})
             return

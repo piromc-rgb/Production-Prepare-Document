@@ -3,7 +3,7 @@ import re
 import fitz
 import pandas as pd
 
-DEFAULT_DWG_INPUT = "https://drive.google.com/drive/folders/1M-QDPilC7Nn-YW_5YxLQITUS6ZOYEyFm?usp=drive_link"
+DEFAULT_DWG_INPUT = r"D:\Production-Prepare-Document-main\dwg"
 
 def resolve_dwg_dir(path_or_url):
     m = re.search(r'/folders/([a-zA-Z0-9_-]+)', path_or_url)

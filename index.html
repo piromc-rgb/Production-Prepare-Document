@@ -25,7 +25,13 @@
         <div>
           <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
             ระบบจัดชุดเอกสารสำหรับเตรียมผลิต
-            <span class="text-xs bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 px-2 py-0.5 rounded-full font-normal">v0.2</span>
+            <span id="versionBadge" class="text-xs bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 px-2 py-0.5 rounded-full font-normal">v0.3</span>
+
+            <!-- ปุ่ม Update (จะแสดงอัตโนมัติเฉพาะเมื่อมีเวอร์ชันใหม่บน Online) -->
+            <button id="btnUpdate" onclick="performUpdate()" class="hidden animate-pulse px-2.5 py-0.5 bg-amber-400 hover:bg-amber-300 text-slate-950 text-[11px] font-bold rounded-full transition flex items-center gap-1 shadow-md cursor-pointer" title="มีเวอร์ชันใหม่บน Online คลิกเพื่ออัปเดต">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              <span>อัปเดตเป็น <span id="onlineVersionText"></span></span>
+            </button>
           </h1>
           <p class="text-xs text-slate-400">Automated Production Order, Drawing & QC Checklist Bundler</p>
         </div>
@@ -794,7 +800,7 @@
       renderSourceCards();
     }
 
-    const DEFAULT_DWG_INPUT = "https://drive.google.com/drive/folders/1M-QDPilC7Nn-YW_5YxLQITUS6ZOYEyFm?usp=drive_link";
+    const DEFAULT_DWG_INPUT = "D:\\Production-Prepare-Document-main\\dwg";
 
     function getCloudSettings() {
       try {
@@ -1243,6 +1249,71 @@
       }
     }
 
+    // Check update between Offline (local) and Online (GitHub)
+    async function checkVersionUpdate() {
+      if (isCloud) return;
+
+      try {
+        const res = await fetch('https://raw.githubusercontent.com/piromc-rgb/Production-Prepare-Document/main/index.html?t=' + Date.now());
+        if (!res.ok) return;
+        const html = await res.text();
+        const m = html.match(/id=["']versionBadge["'][^>]*>v?([\d\.]+)/);
+        if (m) {
+          const onlineVerStr = m[1].trim();
+          const localBadge = document.getElementById('versionBadge');
+          const localVerStr = localBadge ? localBadge.innerText.replace('v', '').trim() : '0.3';
+
+          function parseVer(v) {
+            return v.split('.').map(n => parseInt(n, 10) || 0);
+          }
+          const onlineV = parseVer(onlineVerStr);
+          const localV = parseVer(localVerStr);
+
+          let isOlder = false;
+          for (let i = 0; i < Math.max(onlineV.length, localV.length); i++) {
+            const onPart = onlineV[i] || 0;
+            const locPart = localV[i] || 0;
+            if (onPart > locPart) { isOlder = true; break; }
+            if (onPart < locPart) { break; }
+          }
+
+          if (isOlder) {
+            const btn = document.getElementById('btnUpdate');
+            const txt = document.getElementById('onlineVersionText');
+            if (btn && txt) {
+              txt.innerText = `v${onlineVerStr}`;
+              btn.classList.remove('hidden');
+            }
+          }
+        }
+      } catch (e) {
+        console.log('Unable to check online version:', e);
+      }
+    }
+
+    async function performUpdate() {
+      if (!confirm('พบเวอร์ชันใหม่บนระบบ Online ต้องการอัปเดตระบบเดี๋ยวนี้หรือไม่?')) return;
+      const btn = document.getElementById('btnUpdate');
+      btn.innerText = 'กำลังอัปเดต...';
+      btn.disabled = true;
+
+      try {
+        const data = await safeFetchJson('/api/do-update', { method: 'POST' });
+        if (data.success) {
+          alert('อัปเดตเวอร์ชันล่าสุดสำเร็จ! ระบบจะทำการรีโหลดหน้าเว็บ');
+          window.location.reload();
+        } else {
+          alert('ไม่สามารถอัปเดตอัตโนมัติได้: ' + (data.error || 'กรุณาลองใหม่อีกครั้ง หรือดาวน์โหลดไฟล์ ZIP'));
+          btn.innerText = 'อัปเดต';
+          btn.disabled = false;
+        }
+      } catch (e) {
+        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + e.message);
+        btn.innerText = 'อัปเดต';
+        btn.disabled = false;
+      }
+    }
+
     window.onload = () => {
       if (isCloud) {
         const cb = document.getElementById('cloudBanner');
@@ -1251,6 +1322,7 @@
       }
       renderSourceCards();
       refreshStatus();
+      checkVersionUpdate();
     };
   </script>
 </body>
