@@ -478,10 +478,10 @@
               </button>
             </div>
             <p class="text-[11px] text-slate-500">รองรับทั้งลิงก์ Google Drive Folder (แปลง shortcut ให้อัตโนมัติ) หรือพาธโฟลเดอร์ในเครื่อง (เช่น <code class="bg-slate-200/60 px-1 py-0.5 rounded">G:\My Drive\staus overview\dwg</code>)</p>
-            <input type="text" id="settingDwgSource" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="ลิงก์ Google Drive หรือพาธ เช่น G:\My Drive\staus overview\dwg">
-            <div class="flex items-center justify-between pt-1">
-              <span class="text-[11px] text-slate-400">โฟลเดอร์ที่ระบบตรวจพบ:</span>
-              <span id="settingDwgResolved" class="text-[11px] font-mono text-slate-600 truncate max-w-sm">-</span>
+            <input type="text" id="settingDwgSource" oninput="updateSettingResolvedPaths()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="ลิงก์ Google Drive หรือพาธ เช่น G:\My Drive\staus overview\dwg">
+            <div class="flex items-start justify-between pt-1 gap-2">
+              <span class="text-[11px] text-slate-400 shrink-0">โฟลเดอร์เต็มในเครื่อง:</span>
+              <span id="settingDwgResolved" class="text-[11px] font-mono text-slate-700 font-semibold break-all text-right max-w-md">-</span>
             </div>
           </div>
 
@@ -497,10 +497,10 @@
               </button>
             </div>
             <p class="text-[11px] text-slate-500">โฟลเดอร์สำหรับรับไฟล์ใบสั่งผลิตจากการอัปโหลด หรือโฟลเดอร์ที่เก็บไฟล์ PDF รวม (ค่าเริ่มต้น: <code class="bg-slate-200/60 px-1 py-0.5 rounded">pdf_list</code>)</p>
-            <input type="text" id="settingPdDir" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="เช่น pdf_list หรือระบุพาธเต็ม D:\PD_Orders">
-            <div class="flex items-center justify-between pt-1">
-              <span class="text-[11px] text-slate-400">โฟลเดอร์เต็มในเครื่อง:</span>
-              <span id="settingPdResolved" class="text-[11px] font-mono text-slate-600 truncate max-w-sm">-</span>
+            <input type="text" id="settingPdDir" oninput="updateSettingResolvedPaths()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="เช่น pdf_list หรือระบุพาธเต็ม D:\PD_Orders">
+            <div class="flex items-start justify-between pt-1 gap-2">
+              <span class="text-[11px] text-slate-400 shrink-0">โฟลเดอร์เต็มในเครื่อง:</span>
+              <span id="settingPdResolved" class="text-[11px] font-mono text-slate-700 font-semibold break-all text-right max-w-md">-</span>
             </div>
           </div>
 
@@ -516,10 +516,10 @@
               </button>
             </div>
             <p class="text-[11px] text-slate-500">โฟลเดอร์เก็บไฟล์แบบฟอร์มตรวจสอบคุณภาพ <code class="bg-slate-200/60 px-1 py-0.5 rounded">QC_check_sheet.pdf</code> (ค่าเริ่มต้น: <code class="bg-slate-200/60 px-1 py-0.5 rounded">att_form</code>)</p>
-            <input type="text" id="settingAttDir" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="เช่น att_form หรือพาธเต็ม">
-            <div class="flex items-center justify-between pt-1">
-              <span class="text-[11px] text-slate-400">โฟลเดอร์เต็มในเครื่อง:</span>
-              <span id="settingAttResolved" class="text-[11px] font-mono text-slate-600 truncate max-w-sm">-</span>
+            <input type="text" id="settingAttDir" oninput="updateSettingResolvedPaths()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="เช่น att_form หรือพาธเต็ม">
+            <div class="flex items-start justify-between pt-1 gap-2">
+              <span class="text-[11px] text-slate-400 shrink-0">โฟลเดอร์เต็มในเครื่อง:</span>
+              <span id="settingAttResolved" class="text-[11px] font-mono text-slate-700 font-semibold break-all text-right max-w-md">-</span>
             </div>
           </div>
 
@@ -535,10 +535,10 @@
               </button>
             </div>
             <p class="text-[11px] text-slate-500">โฟลเดอร์ปลายทางสำหรับบันทึกไฟล์ PDF ที่จัดชุดเสร็จแล้ว (ค่าเริ่มต้น: <code class="bg-slate-200/60 px-1 py-0.5 rounded">output</code>)</p>
-            <input type="text" id="settingOutputDir" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="เช่น output หรือพาธเต็ม เช่น G:\My Drive\PrintReady">
-            <div class="flex items-center justify-between pt-1">
-              <span class="text-[11px] text-slate-400">โฟลเดอร์เต็มในเครื่อง:</span>
-              <span id="settingOutputResolved" class="text-[11px] font-mono text-slate-600 truncate max-w-sm">-</span>
+            <input type="text" id="settingOutputDir" oninput="updateSettingResolvedPaths()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="เช่น output หรือพาธเต็ม เช่น G:\My Drive\PrintReady">
+            <div class="flex items-start justify-between pt-1 gap-2">
+              <span class="text-[11px] text-slate-400 shrink-0">โฟลเดอร์เต็มในเครื่อง:</span>
+              <span id="settingOutputResolved" class="text-[11px] font-mono text-slate-700 font-semibold break-all text-right max-w-md">-</span>
             </div>
           <!-- 5. Version & Online Update Status -->
           <div class="bg-indigo-50/60 rounded-xl p-4 border border-indigo-200/80 space-y-2.5">
@@ -1164,24 +1164,78 @@
       await openFolderTarget('output');
     }
 
+    function getDetectedBaseDir() {
+      const dwgVal = (document.getElementById('settingDwgSource')?.value || '').trim();
+      if (dwgVal && !dwgVal.startsWith('http') && /^[a-zA-Z]:[\\\/]/.test(dwgVal)) {
+        const lastSlash = Math.max(dwgVal.lastIndexOf('\\'), dwgVal.lastIndexOf('/'));
+        if (lastSlash > 2) {
+          return dwgVal.substring(0, lastSlash);
+        }
+      }
+      return 'D:\\Production-Prepare-Document-main';
+    }
+
+    function formatFullPath(val, defaultSub) {
+      let v = (val || defaultSub || '').trim();
+      if (!v) return '';
+      if (v.startsWith('http://') || v.startsWith('https://')) {
+        return 'Google Drive Folder (โฟลเดอร์บนคลาวด์)';
+      }
+      if (/^[a-zA-Z]:[\\\/]/.test(v)) {
+        return v.replace(/\//g, '\\');
+      }
+      const base = getDetectedBaseDir();
+      return `${base}\\${v.replace(/\//g, '\\')}`;
+    }
+
+    function updateSettingResolvedPaths() {
+      const dwg = document.getElementById('settingDwgSource')?.value?.trim();
+      const pd = document.getElementById('settingPdDir')?.value?.trim();
+      const att = document.getElementById('settingAttDir')?.value?.trim();
+      const out = document.getElementById('settingOutputDir')?.value?.trim();
+
+      const elDwg = document.getElementById('settingDwgResolved');
+      const elPd = document.getElementById('settingPdResolved');
+      const elAtt = document.getElementById('settingAttResolved');
+      const elOut = document.getElementById('settingOutputResolved');
+
+      if (elDwg) elDwg.innerText = formatFullPath(dwg, 'dwg');
+      if (elPd) elPd.innerText = formatFullPath(pd, 'pdf_list');
+      if (elAtt) elAtt.innerText = formatFullPath(att, 'att_form');
+      if (elOut) elOut.innerText = formatFullPath(out, 'output');
+    }
+
     async function openSettingsModal() {
       if (isCloud) {
         const cfg = getCloudSettings();
-        const dwgVal = cfg.dwg_source || DEFAULT_DWG_INPUT;
-        document.getElementById('settingDwgSource').value = dwgVal;
+        document.getElementById('settingDwgSource').value = cfg.dwg_source || DEFAULT_DWG_INPUT;
         document.getElementById('settingPdDir').value = cfg.pd_dir || 'pdf_list';
         document.getElementById('settingAttDir').value = cfg.att_dir || 'att_form';
         document.getElementById('settingOutputDir').value = cfg.output_dir || 'output';
 
-        if (dwgVal.startsWith('http://') || dwgVal.startsWith('https://')) {
-          document.getElementById('settingDwgResolved').innerText = `Google Drive Folder (เปิดดูไฟล์แบบผ่านเบราว์เซอร์)`;
-        } else {
-          document.getElementById('settingDwgResolved').innerText = `${dwgVal} (เปิดด้วย File Explorer ในเครื่อง)`;
-        }
-        document.getElementById('settingPdResolved').innerText = `${cfg.pd_dir} (เปิดด้วย File Explorer ในเครื่อง)`;
-        document.getElementById('settingAttResolved').innerText = `${cfg.att_dir} (เปิดด้วย File Explorer ในเครื่อง)`;
-        document.getElementById('settingOutputResolved').innerText = `${cfg.output_dir} (เปิดด้วย File Explorer ในเครื่อง)`;
+        updateSettingResolvedPaths();
         document.getElementById('settingsModal').classList.remove('hidden');
+
+        // ดึงค่าพาธเต็มจาก Local Server อัตโนมัติถ้าเปิดใช้งานอยู่ในเครื่อง
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 1200);
+          const res = await fetch('http://127.0.0.1:8088/api/settings', {
+            signal: controller.signal,
+            headers: { 'Accept': 'application/json' }
+          });
+          clearTimeout(timeoutId);
+          if (res.ok) {
+            const data = await res.json();
+            const resvd = data.resolved || {};
+            if (resvd.dwg) document.getElementById('settingDwgResolved').innerText = `${resvd.dwg} (${resvd.dwg_count || 0} ไฟล์)`;
+            if (resvd.pd) document.getElementById('settingPdResolved').innerText = `${resvd.pd} (${resvd.pd_count || 0} ไฟล์)`;
+            if (resvd.att) document.getElementById('settingAttResolved').innerText = `${resvd.att} (${resvd.att_count || 0} ไฟล์)`;
+            if (resvd.output) document.getElementById('settingOutputResolved').innerText = `${resvd.output} (${resvd.output_count || 0} ไฟล์)`;
+          }
+        } catch (e) {
+          // ไม่รบกวนการทำงาน
+        }
         return;
       }
 
@@ -1225,6 +1279,7 @@
       document.getElementById('settingPdDir').value = 'pdf_list';
       document.getElementById('settingAttDir').value = 'att_form';
       document.getElementById('settingOutputDir').value = 'output';
+      updateSettingResolvedPaths();
     }
 
     async function saveSettings() {
