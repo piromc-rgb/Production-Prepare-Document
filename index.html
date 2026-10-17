@@ -536,6 +536,37 @@
               <span class="text-[11px] text-slate-400">โฟลเดอร์เต็มในเครื่อง:</span>
               <span id="settingOutputResolved" class="text-[11px] font-mono text-slate-600 truncate max-w-sm">-</span>
             </div>
+          <!-- 5. Version & Online Update Status -->
+          <div class="bg-indigo-50/60 rounded-xl p-4 border border-indigo-200/80 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <label class="font-bold text-slate-800 flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px]">5</span>
+                🔄 ตรวจสอบและอัปเดตเวอร์ชัน (Version & Update Checker)
+              </label>
+              <button onclick="manualCheckUpdate(true)" class="text-[11px] text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1 font-semibold">
+                🔄 ตรวจสอบเดี๋ยวนี้
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-500">เปรียบเทียบเวอร์ชันในเครื่อง (Local) กับเวอร์ชันล่าสุดบน GitHub (Online)</p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-white rounded-lg p-2.5 border border-slate-200 text-[11px]">
+              <div>
+                <span class="text-slate-400 block">เวอร์ชันในเครื่อง:</span>
+                <span id="settingLocalVer" class="font-bold text-slate-800">v0.3</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block">เวอร์ชันบน Online:</span>
+                <span id="settingOnlineVer" class="font-bold text-indigo-600">กำลังตรวจ...</span>
+              </div>
+              <div class="col-span-2 sm:col-span-1 flex items-center justify-start sm:justify-end">
+                <span id="settingUpdateStatusBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">กำลังตรวจสอบ</span>
+              </div>
+            </div>
+            <div id="settingUpdateActionBox" class="hidden pt-1 flex items-center justify-between">
+              <span class="text-[11px] text-amber-700 font-medium">⚠️ มีเวอร์ชันใหม่กว่าบน Online</span>
+              <button onclick="performUpdate()" class="px-3 py-1 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold rounded-lg text-xs transition shadow-sm flex items-center gap-1 cursor-pointer">
+                ⚡ อัปเดตทันที
+              </button>
+            </div>
           </div>
 
         </div>
@@ -1250,18 +1281,23 @@
     }
 
     // Check update between Offline (local) and Online (GitHub)
-    async function checkVersionUpdate() {
-      if (isCloud) return;
+    async function checkVersionUpdate(silent = true) {
+      const localBadge = document.getElementById('versionBadge');
+      const localVerStr = localBadge ? localBadge.innerText.replace('v', '').trim() : '0.3';
+      
+      const setLocalVer = document.getElementById('settingLocalVer');
+      if (setLocalVer) setLocalVer.innerText = `v${localVerStr}`;
 
       try {
         const res = await fetch('https://raw.githubusercontent.com/piromc-rgb/Production-Prepare-Document/main/index.html?t=' + Date.now());
-        if (!res.ok) return;
+        if (!res.ok) throw new Error('ไม่สามารถดึงข้อมูลเวอร์ชัน Online ได้');
         const html = await res.text();
         const m = html.match(/id=["']versionBadge["'][^>]*>v?([\d\.]+)/);
         if (m) {
           const onlineVerStr = m[1].trim();
-          const localBadge = document.getElementById('versionBadge');
-          const localVerStr = localBadge ? localBadge.innerText.replace('v', '').trim() : '0.3';
+          
+          const setOnlineVer = document.getElementById('settingOnlineVer');
+          if (setOnlineVer) setOnlineVer.innerText = `v${onlineVerStr}`;
 
           function parseVer(v) {
             return v.split('.').map(n => parseInt(n, 10) || 0);
@@ -1277,25 +1313,54 @@
             if (onPart < locPart) { break; }
           }
 
+          const btn = document.getElementById('btnUpdate');
+          const txt = document.getElementById('onlineVersionText');
+          const badge = document.getElementById('settingUpdateStatusBadge');
+          const actionBox = document.getElementById('settingUpdateActionBox');
+
           if (isOlder) {
-            const btn = document.getElementById('btnUpdate');
-            const txt = document.getElementById('onlineVersionText');
             if (btn && txt) {
               txt.innerText = `v${onlineVerStr}`;
               btn.classList.remove('hidden');
             }
+            if (badge) {
+              badge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300";
+              badge.innerText = `⚡ มีเวอร์ชัน v${onlineVerStr}`;
+            }
+            if (actionBox) actionBox.classList.remove('hidden');
+            if (!silent) alert(`พบเวอร์ชันใหม่บน Online: v${onlineVerStr} (เวอร์ชันปัจจุบันในเครื่อง: v${localVerStr})\nคุณสามารถกดปุ่ม "⚡ อัปเดตทันที" เพื่อรับการปรับปรุงล่าสุดได้เลยครับ`);
+          } else {
+            if (btn) btn.classList.add('hidden');
+            if (badge) {
+              badge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+              badge.innerText = "✓ เป็นเวอร์ชันล่าสุดแล้ว";
+            }
+            if (actionBox) actionBox.classList.add('hidden');
+            if (!silent) alert(`ระบบของคุณเป็นเวอร์ชันล่าสุดแล้ว (v${localVerStr}) ตรงกับ Online ครับ`);
           }
         }
       } catch (e) {
-        console.log('Unable to check online version:', e);
+        console.warn('Check update error:', e);
+        const badge = document.getElementById('settingUpdateStatusBadge');
+        if (badge) {
+          badge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500";
+          badge.innerText = "โหมด Offline";
+        }
+        if (!silent) alert('ไม่สามารถเชื่อมต่อตรวจสอบกับ GitHub ได้: ' + e.message);
       }
+    }
+
+    async function manualCheckUpdate() {
+      await checkVersionUpdate(false);
     }
 
     async function performUpdate() {
       if (!confirm('พบเวอร์ชันใหม่บนระบบ Online ต้องการอัปเดตระบบเดี๋ยวนี้หรือไม่?')) return;
       const btn = document.getElementById('btnUpdate');
-      btn.innerText = 'กำลังอัปเดต...';
-      btn.disabled = true;
+      if (btn) {
+        btn.innerText = 'กำลังอัปเดต...';
+        btn.disabled = true;
+      }
 
       try {
         const data = await safeFetchJson('/api/do-update', { method: 'POST' });
@@ -1303,14 +1368,18 @@
           alert('อัปเดตเวอร์ชันล่าสุดสำเร็จ! ระบบจะทำการรีโหลดหน้าเว็บ');
           window.location.reload();
         } else {
-          alert('ไม่สามารถอัปเดตอัตโนมัติได้: ' + (data.error || 'กรุณาลองใหม่อีกครั้ง หรือดาวน์โหลดไฟล์ ZIP'));
-          btn.innerText = 'อัปเดต';
-          btn.disabled = false;
+          alert('ไม่สามารถอัปเดตอัตโนมัติได้: ' + (data.error || 'กรุณาดาวน์โหลดไฟล์ ZIP ล่าสุด'));
+          if (btn) {
+            btn.innerText = 'อัปเดต';
+            btn.disabled = false;
+          }
         }
       } catch (e) {
         alert('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + e.message);
-        btn.innerText = 'อัปเดต';
-        btn.disabled = false;
+        if (btn) {
+          btn.innerText = 'อัปเดต';
+          btn.disabled = false;
+        }
       }
     }
 
@@ -1322,7 +1391,7 @@
       }
       renderSourceCards();
       refreshStatus();
-      checkVersionUpdate();
+      checkVersionUpdate(true);
     };
   </script>
 </body>
