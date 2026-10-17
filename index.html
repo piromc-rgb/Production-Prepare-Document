@@ -473,9 +473,6 @@
                 <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px]">1</span>
                 📐 แหล่งเก็บไฟล์แบบ Drawing (CAD / PDF Drawing)
               </label>
-              <button onclick="openFolderTarget('dwg')" class="text-[11px] text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1 font-medium">
-                📂 Open Location
-              </button>
             </div>
             <p class="text-[11px] text-slate-500">รองรับทั้งลิงก์ Google Drive Folder (แปลง shortcut ให้อัตโนมัติ) หรือพาธโฟลเดอร์ในเครื่อง (เช่น <code class="bg-slate-200/60 px-1 py-0.5 rounded">G:\My Drive\staus overview\dwg</code>)</p>
             <input type="text" id="settingDwgSource" oninput="updateSettingResolvedPaths()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="ลิงก์ Google Drive หรือพาธ เช่น G:\My Drive\staus overview\dwg">
@@ -492,9 +489,6 @@
                 <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px]">2</span>
                 📄 โฟลเดอร์ใบสั่งผลิตต้นทาง (Production Order / PD Input)
               </label>
-              <button onclick="openFolderTarget('pd')" class="text-[11px] text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1 font-medium">
-                📂 Open Location
-              </button>
             </div>
             <p class="text-[11px] text-slate-500">โฟลเดอร์สำหรับรับไฟล์ใบสั่งผลิตจากการอัปโหลด หรือโฟลเดอร์ที่เก็บไฟล์ PDF รวม (ค่าเริ่มต้น: <code class="bg-slate-200/60 px-1 py-0.5 rounded">pdf_list</code>)</p>
             <input type="text" id="settingPdDir" oninput="updateSettingResolvedPaths()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="เช่น pdf_list หรือระบุพาธเต็ม D:\PD_Orders">
@@ -511,9 +505,6 @@
                 <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px]">3</span>
                 📋 โฟลเดอร์แบบฟอร์มแนบ (Attachment / QC Check Sheet)
               </label>
-              <button onclick="openFolderTarget('att')" class="text-[11px] text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1 font-medium">
-                📂 Open Location
-              </button>
             </div>
             <p class="text-[11px] text-slate-500">โฟลเดอร์เก็บไฟล์แบบฟอร์มตรวจสอบคุณภาพ <code class="bg-slate-200/60 px-1 py-0.5 rounded">QC_check_sheet.pdf</code> (ค่าเริ่มต้น: <code class="bg-slate-200/60 px-1 py-0.5 rounded">att_form</code>)</p>
             <input type="text" id="settingAttDir" oninput="updateSettingResolvedPaths()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="เช่น att_form หรือพาธเต็ม">
@@ -530,9 +521,6 @@
                 <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px]">4</span>
                 📦 โฟลเดอร์บันทึกผลลัพธ์ (Output Destination)
               </label>
-              <button onclick="openFolderTarget('output')" class="text-[11px] text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1 font-medium">
-                📂 Open Location
-              </button>
             </div>
             <p class="text-[11px] text-slate-500">โฟลเดอร์ปลายทางสำหรับบันทึกไฟล์ PDF ที่จัดชุดเสร็จแล้ว (ค่าเริ่มต้น: <code class="bg-slate-200/60 px-1 py-0.5 rounded">output</code>)</p>
             <input type="text" id="settingOutputDir" oninput="updateSettingResolvedPaths()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="เช่น output หรือพาธเต็ม เช่น G:\My Drive\PrintReady">
